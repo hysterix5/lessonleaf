@@ -1,33 +1,33 @@
-.root { max-width: 1120px; margin: 0 auto; padding: 42px 38px 76px; color: #173142; }
+.root { max-width: 1120px; margin: 0 auto; padding: 42px 38px 76px; color: var(--ink); }
 .intro { max-width: 760px; margin-bottom: 26px; }
 .introTitle { display: flex; align-items: center; gap: 14px; margin: 10px 0; }
-.introTitle h1 { margin: 0; font: 700 35px Georgia, serif; letter-spacing: -.7px; }
-.introIcon { display: grid; place-items: center; flex: none; width: 43px; height: 43px; border-radius: 13px; background: #e8f5e9; color: #2e8769; }
-.intro p { margin: 0; color: #71858a; font-size: 13px; line-height: 1.65; }
+.introTitle h1 { margin: 0; font: 400 35px var(--font-heading); letter-spacing: -.7px; }
+.introIcon { display: grid; place-items: center; flex: none; width: 43px; height: 43px; border-radius: 13px; background: var(--secondary); color: var(--primary); }
+.intro p { margin: 0; color: var(--text-muted); font-size: 13px; line-height: 1.65; }
 .contents { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 25px; }
-.contents a { display: grid; align-content: start; gap: 5px; min-height: 106px; padding: 15px; border: 1px solid #dce8e0; border-radius: 13px; background: #fff; text-decoration: none; box-shadow: 0 6px 20px #254a3b08; transition: border-color .2s, transform .2s; }
-.contents a:hover, .contents a:focus-visible { border-color: #75b599; transform: translateY(-2px); outline: none; }
-.contents span { color: #3b9a76; font-size: 10px; font-weight: 900; letter-spacing: .8px; }
-.contents strong { color: #1b3e44; font-size: 12px; line-height: 1.3; }
-.contents small { color: #80968a; font-size: 10px; line-height: 1.4; }
+.contents a { display: grid; align-content: start; gap: 5px; min-height: 106px; padding: 15px; border: 1px solid var(--line); border-radius: 13px; background: #fffefb; text-decoration: none; box-shadow: 0 6px 20px #254a3b08; transition: border-color .2s, transform .2s; }
+.contents a:hover, .contents a:focus-visible { border-color: var(--ring); transform: translateY(-2px); outline: none; }
+.contents span { color: #758d4b; font-size: 10px; font-weight: 900; letter-spacing: .8px; }
+.contents strong { color: var(--ink); font-size: 12px; line-height: 1.3; }
+.contents small { color: var(--text-muted); font-size: 10px; line-height: 1.4; }
 .steps { display: grid; gap: 16px; }
-.stepCard { display: block; padding: 24px 26px; border: 1px solid #dce8e0; border-radius: 16px; background: #fff; box-shadow: 0 9px 28px #254a3b0a; scroll-margin-top: 22px; }
+.stepCard { display: block; padding: 24px 26px; border: 1px solid var(--line); border-radius: 16px; background: #fffefb; box-shadow: 0 9px 28px #254a3b0a; scroll-margin-top: 22px; }
 .stepHeader { display: flex; align-items: center; gap: 13px; margin-bottom: 15px; }
-.stepNumber { display: grid; place-items: center; flex: none; width: 35px; height: 35px; border-radius: 10px; background: #e8f5e9; color: #2e8769; font-size: 11px; font-weight: 900; }
-.stepHeader h2 { margin: 0; color: #173142; font: 700 21px Georgia, serif; }
-.instructions { display: grid; gap: 10px; margin: 0 0 0 20px; padding: 0; color: #526b67; font-size: 12px; line-height: 1.65; }
+.stepNumber { display: grid; place-items: center; flex: none; width: 35px; height: 35px; border-radius: 10px; background: var(--secondary); color: var(--primary); font-size: 11px; font-weight: 900; }
+.stepHeader h2 { margin: 0; color: var(--ink); font: 400 21px var(--font-heading); }
+.instructions { display: grid; gap: 10px; margin: 0 0 0 20px; padding: 0; color: var(--text-muted); font-size: 12px; line-height: 1.65; }
 .instructions li { padding-left: 5px; }
-.instructions li::marker { color: #34886d; font-weight: 800; }
-.instructions strong, .note strong { color: #244e46; font-weight: 800; }
-.note { margin: 18px 0 0; padding: 12px 14px; border: 1px solid #d8ebde; border-radius: 9px; background: #f4faf5; color: #587469; font-size: 11px; line-height: 1.6; }
-.stepAction { display: inline-flex; align-items: center; gap: 7px; height: 34px; margin-top: 18px; border-color: #cfe3d6; color: #23775f; background: #fff; font-size: 11px; font-weight: 800; }
+.instructions li::marker { color: #758d4b; font-weight: 800; }
+.instructions strong, .note strong { color: var(--ink); font-weight: 800; }
+.note { margin: 18px 0 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: 9px; background: #f3f6ec; color: #587469; font-size: 11px; line-height: 1.6; }
+.stepAction { display: inline-flex; align-items: center; gap: 7px; height: 34px; margin-top: 18px; border-color: #cfe3d6; color: var(--primary); background: #fffefb; font-size: 11px; font-weight: 800; }
 .stepAction:hover { background: #edf8ef; }
-.reference { display: flex; align-items: center; gap: 14px; margin-top: 20px; padding: 18px 21px; border: 1px dashed #cbded0; border-radius: 14px; background: #f5faf5; color: #347e65; }
+.reference { display: flex; align-items: center; gap: 14px; margin-top: 20px; padding: 18px 21px; border: 1px dashed var(--line); border-radius: 14px; background: #f3f6ec; color: #347e65; }
 .reference > svg { flex: none; }
 .reference > div { min-width: 0; }
-.reference strong { color: #244a45; font-size: 12px; }
-.reference p { margin: 4px 0 0; color: #718b7e; font-size: 11px; line-height: 1.4; }
-.reference a { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; white-space: nowrap; color: #247b66; font-size: 11px; font-weight: 800; text-decoration: none; }
+.reference strong { color: var(--ink); font-size: 12px; }
+.reference p { margin: 4px 0 0; color: var(--text-muted); font-size: 11px; line-height: 1.4; }
+.reference a { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; white-space: nowrap; color: var(--primary); font-size: 11px; font-weight: 800; text-decoration: none; }
 .reference a:hover { text-decoration: underline; }
 @media (max-width: 950px) { .contents { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 760px) { .root { padding: 27px 17px 60px; } .introTitle h1 { font-size: 29px; } .reference { align-items: flex-start; flex-wrap: wrap; } .reference a { margin-left: 34px; } }

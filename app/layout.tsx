@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./studio.css";
 import { Figtree } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 
-const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
+const figtree = Figtree({ subsets: ["latin"], variable: "--font-figtree", display: "swap" });
 
 export const metadata: Metadata = {
   title: "Lessonleaf | Lesson Planning Studio",
   description: "Create, refine, and save structured lesson plans.",
+  applicationName: "Lessonleaf",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
