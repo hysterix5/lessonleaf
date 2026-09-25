@@ -17,7 +17,9 @@
 .footer span:last-child { text-align: right; }
 .overviewGoal { margin: 0 0 15px; color: #1f2933; font-size: 11px; line-height: 1.55; }
 .overviewTable { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 10px; line-height: 1.45; }
+.overviewWeekColumn { width: 7%; }
 .overviewTable th, .overviewTable td { border: 1px solid #5a6469; padding: 7px 8px; vertical-align: top; text-align: left; overflow-wrap: anywhere; }
+.overviewTable td:first-child { text-align: center; }
 .overviewTable th { font-weight: 700; }
 .overviewTable tr { break-inside: avoid-page; page-break-inside: avoid; }
 @media (max-width: 1000px) { .normal { max-height: 620px; } }

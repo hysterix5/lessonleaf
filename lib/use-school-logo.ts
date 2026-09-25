@@ -12,19 +12,24 @@ export function useSchoolLogo(userId: string | undefined, path: string) {
   useEffect(() => {
     if (!userId || !path) return;
     let active = true;
-    let objectUrl: string | undefined;
     void (async () => {
       try {
         const { data, error } = await getSupabase().storage.from(schoolLogoBucket).download(path);
         if (error) throw error;
         if (!active) return;
-        objectUrl = URL.createObjectURL(data);
-        setResult({ userId, path, url: objectUrl });
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => reject(reader.error);
+          reader.readAsDataURL(data);
+        });
+        if (!active) return;
+        setResult({ userId, path, url: dataUrl });
       } catch {
         if (active) setResult({ userId, path, error: "Could not load the school logo. Replace it in Settings or check that the Storage migration is applied." });
       }
     })();
-    return () => { active = false; if (objectUrl) URL.revokeObjectURL(objectUrl); };
+    return () => { active = false; };
   }, [userId, path]);
 
   return result && result.userId === userId && result.path === path

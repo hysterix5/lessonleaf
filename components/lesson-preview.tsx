@@ -107,6 +107,7 @@ export function LessonPreview({ plan, settings, logoUrl, template, eagerImages =
 
 function OverviewTable({ course }: { course: CourseOverview }) {
   return <table className={styles.overviewTable} aria-label="Weekly outline">
+    <colgroup><col className={styles.overviewWeekColumn} /><col /><col /><col /><col /></colgroup>
     <thead><tr><th>Week</th><th>Unit / Topic</th><th>Key Focus</th><th>Activity Highlight</th><th>Presentation Goal</th></tr></thead>
     <tbody>{course.weeks.map((week) => <tr key={week.week}>
       <td>{week.week}</td>
