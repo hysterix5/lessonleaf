@@ -1,4 +1,4 @@
-import { generatePlan, parseGenerateInput, weekPresets, type LessonPlan } from "./lesson-plan";
+import { generatePlan, parseGenerateInput, parseLessonCategory, weekPresets, type LessonPlan } from "./lesson-plan";
 import type { ClassRecord, CourseOverview, CourseWeek } from "./catalog";
 import type { AppSettings } from "./settings";
 
@@ -17,6 +17,7 @@ export type TermScheduleInput = {
   overview?: CourseOverview;
   chapter: string;
   unit: string;
+  resource: string;
 };
 
 export type TermMeeting = { date: string; week: number; day: number };
@@ -48,7 +49,7 @@ export function createTermMeetings(input: Pick<TermScheduleInput, "termStart" | 
 
 export function buildTermPlans(input: TermScheduleInput, settings: AppSettings): LessonPlan[] {
   const meetings = createTermMeetings(input);
-  if (!input.category.trim()) throw new Error("Choose a lesson category.");
+  const category = parseLessonCategory(input.category);
   if (!input.schoolYear.trim()) throw new Error("Enter a school year.");
   if (!Number.isInteger(input.duration) || input.duration < 10 || input.duration > 240) throw new Error("Duration must be between 10 and 240 minutes.");
   if (input.contentSource === "sample" && !/\bscience\b/i.test(input.classRecord.subject)) throw new Error("The sample Science sequence is available only for Science classes.");
@@ -62,7 +63,7 @@ export function buildTermPlans(input: TermScheduleInput, settings: AppSettings):
       subject: input.classRecord.subject, grade: input.classRecord.grade, section: input.classRecord.section,
       schoolYear: input.schoolYear, week: meeting.week, topic: content.topic, date: meeting.date,
       duration: input.duration, chapter: input.chapter, unit: content.unit || input.unit,
-      resource: settings.resource, pages: "", preparedBy: settings.teacherName,
+      resource: input.resource, pages: "", preparedBy: settings.teacherName,
     }), {
       focus: "focus" in content ? content.focus : content.keyFocus,
       activity: "activity" in content ? content.activity : content.activityHighlight,
@@ -70,7 +71,7 @@ export function buildTermPlans(input: TermScheduleInput, settings: AppSettings):
     });
     return {
       ...plan, title: `${content.topic} · ${meeting.date} · Week ${meeting.week}`,
-      category: input.category.trim(), classId: input.classRecord.id,
+      category, classId: input.classRecord.id,
       className: input.classRecord.name,
       courseOverviewId: input.contentSource === "course" ? input.overview?.id : undefined,
       termBatchId: batchId,

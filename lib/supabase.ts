@@ -28,12 +28,21 @@ function normalize(row: PlanRow): LessonPlan {
 }
 
 export async function listPlans() {
-  const { data, error } = await getSupabase()
-    .from("lesson_plans")
-    .select("id,plan,created_at,updated_at")
-    .order("updated_at", { ascending: false });
-  if (error) throw planError(error);
-  return (data as PlanRow[]).map(normalize);
+  const pageSize = 1000;
+  const rows: PlanRow[] = [];
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await getSupabase()
+      .from("lesson_plans")
+      .select("id,plan,created_at,updated_at")
+      .order("updated_at", { ascending: false })
+      .order("id", { ascending: true })
+      .range(from, from + pageSize - 1);
+    if (error) throw planError(error);
+    const page = data as PlanRow[];
+    rows.push(...page);
+    if (page.length < pageSize) break;
+  }
+  return rows.map(normalize);
 }
 
 export async function createPlan(plan: LessonPlan) {

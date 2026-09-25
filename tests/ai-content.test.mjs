@@ -11,7 +11,19 @@ loadModule.extensions[".ts"] = (module, filename) => {
   module._compile(output, filename);
 };
 
-const { parseAiLessonBatch, applyAiLessonContent } = loadModule("../lib/ai-content.ts");
+const { aiLessonRequest, parseAiLessonRequest, parseAiLessonBatch, applyAiLessonContent } = loadModule("../lib/ai-content.ts");
+
+test("AI draft requests preserve the entered school year through server validation", () => {
+  const plan = {
+    subject: "English", grade: "Grade 1", schoolYear: "2026", week: 1,
+    topic: "Reading stories", date: "2026-09-07", duration: 60,
+    chapter: "", unit: "", resource: "", pages: "",
+    keyFocus: "Reading", activityHighlight: "Story time", presentationGoal: "Retell a story",
+  };
+  const request = aiLessonRequest(plan);
+  assert.equal(parseAiLessonRequest(request).details.schoolYear, "2026");
+  assert.throws(() => parseAiLessonRequest({ ...request, details: { ...request.details, schoolYear: "" } }), /Enter a school year/);
+});
 
 function lesson(inputIndex, topic) {
   return {

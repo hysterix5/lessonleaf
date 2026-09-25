@@ -58,7 +58,7 @@ export function GuidePanel({ signedIn, onNavigate, onSignIn }: {
 
       <GuideStep number={2} id="settings" title="Set your defaults" action="Open settings" onAction={() => onNavigate("settings")} note={<>Settings saved while signed out stay in this browser. After signing in, check and save the values you want in your account. The Drive folder field is reserved for future export support.</>}>
         <li>Open <strong>Settings</strong> and fill in <strong>School &amp; teacher</strong>: application title, school name, school year, teacher name, and default duration.</li>
-        <li>Under <strong>Lesson defaults</strong>, enter your usual subject, grade, section, unit, chapter, and resource or textbook.</li>
+        <li>If signed in, choose a PNG, JPG, or WebP <strong>School logo</strong> under School &amp; teacher. It appears in both print templates. Under <strong>Lesson defaults</strong>, enter your usual subject, grade, section, unit, chapter, and resource or textbook.</li>
         <li>Select <strong>Save settings</strong>. New plans and printable previews use these details.</li>
       </GuideStep>
 
@@ -77,22 +77,23 @@ export function GuidePanel({ signedIn, onNavigate, onSignIn }: {
 
       <GuideStep number={5} id="single" title="Create one lesson plan" action="Open single plan" onAction={() => onNavigate("builder")} note={<>An unsaved working draft stays in this browser but will not appear in <strong>My lesson plans</strong>. Save changes before choosing <strong>Create a fresh draft</strong>.</>}>
         <li>Open <strong>Generate plans → Single Plan</strong>. Choose a week from the sample sequence, select a saved class and course week, or enter lesson details yourself.</li>
-        <li>Check the topic, grade, week, date, duration, and other details. Choose a lesson category and <strong>Generation mode</strong>, then create the draft. AI mode requires sign-in.</li>
+        <li>Check the topic, grade, week, date, duration, and other details. Fields marked <strong>*</strong> are required. Type a lesson category, choose a <strong>Generation mode</strong>, then create the draft. AI mode requires sign-in.</li>
         <li>Edit <strong>Goals &amp; resources</strong>, <strong>Teaching flow</strong>, and <strong>Assessment &amp; more</strong>. The preview updates as you work.</li>
         <li>Select <strong>Save draft</strong> to return later, or <strong>Mark ready</strong> when the plan is ready to teach.</li>
       </GuideStep>
 
       <GuideStep number={6} id="term" title="Generate a term schedule" action="Open term schedule" onAction={() => onNavigate("term")} note={<>Each selected meeting day creates one plan per week, starting on or after the term start date. The plans are saved immediately as editable drafts. AI mode supports up to eight class meetings per batch.</>}>
         <li>Sign in and prepare a class and course overview, or use the sample sequence for a Science class.</li>
-        <li>Open <strong>Generate plans → Term Schedule</strong>. Choose the class, lesson category, term start date, number of weeks, and starting week number. You can generate 1–24 weeks at a time, within weeks 1–52.</li>
+        <li>Open <strong>Generate plans → Term Schedule</strong>. Choose the class, type any lesson category, and set the term start date, number of weeks, and starting week number. Fields marked <strong>*</strong> are required. You can generate 1–24 weeks at a time, within weeks 1–52.</li>
         <li>Review the meeting days, duration, and school year. Choose <strong>Saved course overview</strong> or, for Science, <strong>Sample Science sequence</strong> as the content source.</li>
         <li>Choose <strong>Smart Template</strong> or <strong>AI draft</strong>. Fix any missing-week message, review the lesson count and dates, then generate the drafts.</li>
       </GuideStep>
 
       <GuideStep number={7} id="library" title="Find, edit, and print your plans" action="Open my lesson plans" onAction={() => onNavigate("library")} note={<>The sample PDF provides the built-in format and Science topics. Uploading new PDFs and automatic Drive export are not available yet. Review AI drafts before teaching.</>}>
-        <li>Open <strong>My lesson plans</strong> to see saved drafts and plans marked <strong>Ready to teach</strong>. Search by topic, class, category, date, or subject.</li>
+        <li>Open <strong>My lesson plans</strong> to browse lessons grouped by course. Plans without a course appear under <strong>Other plans</strong>. Search by course, topic, class, category, date, or subject.</li>
         <li>Select <strong>Open</strong> to edit a plan, then use <strong>Save draft</strong> or <strong>Mark ready</strong> again to store the changes.</li>
         <li>In <strong>Lesson preview</strong>, choose <strong>Normal layout</strong> (the default, based on the sample PDF) or <strong>Styled layout</strong>. Use the printer icon to print the selected design, or choose <strong>Save as PDF</strong> in your browser&apos;s print dialog.</li>
+        <li>To print a full course, choose its print template in <strong>My lesson plans</strong> and select <strong>Print all</strong> beside the course name. The print dialog includes every saved plan in that course, in lesson date order, even when a search is active.</li>
         <li>Use <strong>New lesson plan</strong> to start again. To remove a saved plan, select its delete icon and then <strong>Confirm delete</strong>.</li>
       </GuideStep>
     </div>

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import type { LessonPlan } from "@/lib/lesson-plan";
@@ -15,10 +16,14 @@ function PreviewList({ title, items, inline = false }: { title: string; items: s
   return items.length ? <section className="preview-block"><h3>{title}</h3>{inline ? <p>{items.join(" · ")}</p> : <ul>{items.map((item, index) => <li key={`${index}-${item}`}>{item}</li>)}</ul>}</section> : null;
 }
 
-function StyledTemplate({ plan, settings }: { plan: LessonPlan; settings: AppSettings }) {
+function StyledTemplate({ plan, settings, logoUrl, eagerImages }: { plan: LessonPlan; settings: AppSettings; logoUrl: string | null; eagerImages: boolean }) {
   return <Card className="paper-preview">
-    <div className="paper-top">{settings.applicationTitle} <span>• {plan.schoolYear}</span></div>
-    {settings.schoolName && <div className="paper-school">{settings.schoolName}</div>}
+    <div className="paper-brand">
+      {logoUrl && <Image src={logoUrl} alt={`${settings.schoolName || "School"} logo`} width={64} height={64} className="paper-logo" loading={eagerImages ? "eager" : "lazy"} unoptimized />}
+      <div className="paper-brand-text"><div className="paper-top">{settings.applicationTitle} <span>• {plan.schoolYear}</span></div>
+        {settings.schoolName && <div className="paper-school">{settings.schoolName}</div>}
+      </div>
+    </div>
     <h2>{plan.topic}</h2>
     <div className="paper-meta"><span>{plan.subject} · {plan.grade}{plan.section ? ` – ${plan.section}` : ""}</span><span>Week {plan.week}{plan.date ? ` · ${plan.date}` : ""}</span><span>{plan.duration} minutes</span>{plan.category && plan.category !== "General" && <span>{plan.category}</span>}{plan.className && <span>{plan.className}</span>}</div>
     <Separator className="paper-rule" />
@@ -57,9 +62,10 @@ function displayDate(value: string) {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 }
 
-function NormalTemplate({ plan, settings }: { plan: LessonPlan; settings: AppSettings }) {
+function NormalTemplate({ plan, settings, logoUrl, eagerImages }: { plan: LessonPlan; settings: AppSettings; logoUrl: string | null; eagerImages: boolean }) {
   return <article className={styles.normal}>
     <header className={styles.header}>
+      {logoUrl && <Image src={logoUrl} alt={`${settings.schoolName || "School"} logo`} width={64} height={64} className={styles.logo} loading={eagerImages ? "eager" : "lazy"} unoptimized />}
       <h2>Lesson Plan - {plan.grade} - {plan.schoolYear}</h2>
       <p>{plan.subject}{plan.section ? ` - ${plan.section}` : ""} • Week {plan.week} • {plan.topic}</p>
     </header>
@@ -94,6 +100,6 @@ function NormalTemplate({ plan, settings }: { plan: LessonPlan; settings: AppSet
   </article>;
 }
 
-export function LessonPreview({ plan, settings, template }: { plan: LessonPlan; settings: AppSettings; template: PrintTemplate }) {
-  return template === "normal" ? <NormalTemplate plan={plan} settings={settings} /> : <StyledTemplate plan={plan} settings={settings} />;
+export function LessonPreview({ plan, settings, logoUrl, template, eagerImages = false }: { plan: LessonPlan; settings: AppSettings; logoUrl: string | null; template: PrintTemplate; eagerImages?: boolean }) {
+  return template === "normal" ? <NormalTemplate plan={plan} settings={settings} logoUrl={logoUrl} eagerImages={eagerImages} /> : <StyledTemplate plan={plan} settings={settings} logoUrl={logoUrl} eagerImages={eagerImages} />;
 }

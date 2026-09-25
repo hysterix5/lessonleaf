@@ -18,7 +18,7 @@ const classRecord = {
   id: "a410e8b1-5ef1-4947-a5d8-0620c48257dd", name: "Grade 1 Science", subject: "Science",
   grade: "Grade 1", section: "A", schoolYear: "2026–2027", meetingDays: [2], duration: 60,
 };
-const settings = { resource: "Science textbook", teacherName: "Ms. Reyes" };
+const settings = { teacherName: "Ms. Reyes" };
 
 test("Tuesday meetings start after a Thursday term date and cover eight weeks", () => {
   const meetings = createTermMeetings({ termStart: "2026-09-24", numberOfWeeks: 8, startingWeek: 1, meetingDays: [2] });
@@ -36,17 +36,18 @@ test("two meeting days produce two editable lessons per week with course guidanc
     ],
   };
   const plans = buildTermPlans({
-    classRecord, category: "Midterm", schoolYear: "2026–2027", termStart: "2026-09-24",
+    classRecord, category: "Skills Review", schoolYear: "2026–2027", termStart: "2026-09-24",
     numberOfWeeks: 2, startingWeek: 1, duration: 45, meetingDays: [2, 4],
-    contentSource: "course", overview, chapter: "Living things", unit: "Unit 3",
+    contentSource: "course", overview, chapter: "Living things", unit: "Unit 3", resource: "Science textbook, 2nd edition",
   }, settings);
   assert.equal(plans.length, 4);
   assert.deepEqual(plans.map((plan) => plan.week), [1, 1, 2, 2]);
-  assert.equal(plans[0].category, "Midterm");
+  assert.equal(plans[0].category, "Skills Review");
   assert.equal(plans[0].classId, classRecord.id);
   assert.equal(plans[0].activity, "Sort habitat cards");
   assert.match(plans[0].lessonProcedure, /Sort habitat cards/);
   assert.equal(plans[0].duration, 45);
+  assert.equal(plans[0].resource, "Science textbook, 2nd edition");
   assert.equal(new Set(plans.map((plan) => plan.termBatchId)).size, 1);
 });
 
@@ -55,7 +56,7 @@ test("a course batch stops when a requested week has no content", () => {
     classRecord, category: "Midterm", schoolYear: "2026–2027", termStart: "2026-09-24",
     numberOfWeeks: 2, startingWeek: 1, duration: 60, meetingDays: [2],
     contentSource: "course", overview: { id: "96c8d58e-bf4d-411c-91ef-85cc23d6c665", classId: classRecord.id, weeks: [{ week: 1, topic: "Habitats", unit: "", focus: "", activity: "", presentationGoal: "" }] },
-    chapter: "", unit: "",
+    chapter: "", unit: "", resource: "",
   }, settings), /week 2/);
 });
 
@@ -63,6 +64,6 @@ test("the sample Science sequence cannot be used for a different subject", () =>
   assert.throws(() => buildTermPlans({
     classRecord: { ...classRecord, subject: "English" }, category: "Weekly", schoolYear: "2026–2027",
     termStart: "2026-09-24", numberOfWeeks: 1, startingWeek: 1, duration: 60,
-    meetingDays: [2], contentSource: "sample", chapter: "", unit: "",
+    meetingDays: [2], contentSource: "sample", chapter: "", unit: "", resource: "",
   }, settings), /Science classes/);
 });

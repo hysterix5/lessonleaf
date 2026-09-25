@@ -1,9 +1,9 @@
-import type { LessonPlan } from "./lesson-plan";
+import { parseGenerateInput, type LessonPlan } from "./lesson-plan";
 
 export const maxAiTermPlans = 8;
 
 export type AiLessonRequest = {
-  details: Pick<LessonPlan, "subject" | "grade" | "week" | "topic" | "date" | "duration" | "chapter" | "unit" | "resource" | "pages">;
+  details: Pick<LessonPlan, "subject" | "grade" | "schoolYear" | "week" | "topic" | "date" | "duration" | "chapter" | "unit" | "resource" | "pages">;
   guidance: Pick<LessonPlan, "keyFocus" | "activityHighlight" | "presentationGoal">;
 };
 
@@ -18,11 +18,28 @@ export type AiLessonContent = Record<(typeof textFields)[number], string> &
   Record<(typeof listFields)[number], string[]>;
 
 export function aiLessonRequest(plan: LessonPlan): AiLessonRequest {
-  const { subject, grade, week, topic, date, duration, chapter, unit, resource, pages,
+  const { subject, grade, schoolYear, week, topic, date, duration, chapter, unit, resource, pages,
     keyFocus, activityHighlight, presentationGoal } = plan;
   return {
-    details: { subject, grade, week, topic, date, duration, chapter, unit, resource, pages },
+    details: { subject, grade, schoolYear, week, topic, date, duration, chapter, unit, resource, pages },
     guidance: { keyFocus, activityHighlight, presentationGoal },
+  };
+}
+
+export function parseAiLessonRequest(value: unknown): AiLessonRequest {
+  const request = value && typeof value === "object" ? value as Partial<AiLessonRequest> : {};
+  const details = parseGenerateInput({ ...request.details, section: "", preparedBy: "" });
+  const read = (value: unknown) => typeof value === "string" ? value.trim().slice(0, 500) : "";
+  return {
+    details: {
+      subject: details.subject, grade: details.grade, schoolYear: details.schoolYear,
+      week: details.week, topic: details.topic, date: details.date, duration: details.duration,
+      chapter: details.chapter, unit: details.unit, resource: details.resource, pages: details.pages,
+    },
+    guidance: {
+      keyFocus: read(request.guidance?.keyFocus), activityHighlight: read(request.guidance?.activityHighlight),
+      presentationGoal: read(request.guidance?.presentationGoal),
+    },
   };
 }
 

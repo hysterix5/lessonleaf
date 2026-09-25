@@ -70,6 +70,13 @@ export const weekPresets: WeekPreset[] = [
 const textFields = ["title", "subject", "grade", "section", "schoolYear", "topic", "date", "chapter", "unit", "resource", "pages", "keyFocus", "activityHighlight", "presentationGoal", "coreGoal", "languageFocus", "warmUp", "lessonProcedure", "teacherActions", "studentActions", "activity", "presentation", "assessment", "homework", "notes", "preparedBy"] as const;
 const listFields = ["objectives", "vocabulary", "materials", "multimediaLinks"] as const;
 
+export function parseLessonCategory(value: string): string {
+  const category = value.trim();
+  if (!category) throw new Error("Enter a lesson category.");
+  if (category.length > 200) throw new Error("Lesson category must be 200 characters or fewer.");
+  return category;
+}
+
 export function parseGenerateInput(value: unknown): GenerateInput {
   if (!value || typeof value !== "object") throw new Error("Enter the lesson details first.");
   const data = value as Record<string, unknown>;
@@ -83,11 +90,17 @@ export function parseGenerateInput(value: unknown): GenerateInput {
   const duration = Number(data.duration);
   if (!Number.isInteger(week) || week < 1 || week > 52) throw new Error("Week must be between 1 and 52.");
   if (!Number.isInteger(duration) || duration < 10 || duration > 240) throw new Error("Duration must be between 10 and 240 minutes.");
+  const subject = read("subject");
+  const grade = read("grade");
+  const schoolYear = read("schoolYear");
+  if (!subject) throw new Error("Enter a subject.");
+  if (!grade) throw new Error("Enter a grade level.");
+  if (!schoolYear) throw new Error("Enter a school year.");
   return {
-    subject: read("subject") || "Science",
-    grade: read("grade") || "Grade 1",
+    subject,
+    grade,
     section: read("section"),
-    schoolYear: read("schoolYear") || "2026–2027",
+    schoolYear,
     week,
     topic,
     date: read("date"),

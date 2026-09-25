@@ -2,8 +2,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { generateAiContent } from "@/lib/ai-generation";
-import { maxAiTermPlans, type AiLessonContent, type AiLessonRequest } from "@/lib/ai-content";
-import { parseGenerateInput } from "@/lib/lesson-plan";
+import { maxAiTermPlans, parseAiLessonRequest, type AiLessonContent, type AiLessonRequest } from "@/lib/ai-content";
 
 type AiResult = { ok: true; lessons: AiLessonContent[] } | { ok: false; error: string };
 
@@ -25,22 +24,7 @@ export async function generateAiLessonDrafts(accessToken: string, requests: AiLe
     const { data, error } = await supabase.auth.getUser(accessToken);
     if (error || !data.user) return { ok: false, error: "Your sign-in has expired. Sign in again to use AI generation." };
 
-    const validated = requests.map((request) => {
-      const details = parseGenerateInput({ ...request?.details, section: "", schoolYear: "", preparedBy: "" });
-      const guidance = request?.guidance;
-      const read = (value: unknown) => typeof value === "string" ? value.trim().slice(0, 500) : "";
-      return {
-        details: {
-          subject: details.subject, grade: details.grade, week: details.week, topic: details.topic,
-          date: details.date, duration: details.duration, chapter: details.chapter, unit: details.unit,
-          resource: details.resource, pages: details.pages,
-        },
-        guidance: {
-          keyFocus: read(guidance?.keyFocus), activityHighlight: read(guidance?.activityHighlight),
-          presentationGoal: read(guidance?.presentationGoal),
-        },
-      };
-    });
+    const validated = requests.map(parseAiLessonRequest);
     return { ok: true, lessons: await generateAiContent(validated) };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "AI generation failed. Please try again." };

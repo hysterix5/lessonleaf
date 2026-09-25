@@ -4,6 +4,7 @@ import { getSupabase } from "./supabase";
 export type AppSettings = {
   applicationTitle: string;
   schoolName: string;
+  schoolLogoPath: string;
   schoolYear: string;
   teacherName: string;
   defaultDuration: number;
@@ -13,12 +14,16 @@ export type AppSettings = {
   section: string;
   chapter: string;
   unit: string;
-  resource: string;
+  resources: string[];
 };
+
+export const maxSavedResources = 30;
+export const maxResourceLength = 300;
 
 export const defaultSettings: AppSettings = {
   applicationTitle: "Lessonleaf Lesson Plan Generator",
   schoolName: "",
+  schoolLogoPath: "",
   schoolYear: "2026–2027",
   teacherName: "",
   defaultDuration: 60,
@@ -28,7 +33,7 @@ export const defaultSettings: AppSettings = {
   section: "A",
   chapter: "Exploring Ecosystems and Everyday Matter",
   unit: "Unit 3",
-  resource: "Academic Team, Aksorn Charoen Tat Act – Textbook",
+  resources: ["Academic Team, Aksorn Charoen Tat Act – Textbook"],
 };
 
 export const guestSettingsKey = "lessonleaf-guest-settings";
@@ -44,9 +49,15 @@ export function parseSettings(value: unknown): AppSettings {
   const read = (key: keyof AppSettings, max = 300) =>
     typeof data[key] === "string" ? (data[key] as string).trim().slice(0, max) : defaultSettings[key] as string;
   const duration = Number(data.defaultDuration);
+  const logoPath = typeof data.schoolLogoPath === "string" ? data.schoolLogoPath.trim() : "";
+  const legacyResource = typeof data.resource === "string" ? data.resource : "";
+  const resources = normalizeResources(Array.isArray(data.resources)
+    ? data.resources
+    : legacyResource.trim() ? [legacyResource] : defaultSettings.resources);
   return {
     applicationTitle: read("applicationTitle", 100),
     schoolName: read("schoolName", 150),
+    schoolLogoPath: /^[0-9a-f-]{36}\/[0-9a-f-]{36}\.(png|jpg|webp)$/i.test(logoPath) ? logoPath : "",
     schoolYear: read("schoolYear", 30),
     teacherName: read("teacherName", 150),
     defaultDuration: Number.isInteger(duration) && duration >= 10 && duration <= 240 ? duration : defaultSettings.defaultDuration,
@@ -56,8 +67,24 @@ export function parseSettings(value: unknown): AppSettings {
     section: read("section", 100),
     chapter: read("chapter", 200),
     unit: read("unit", 100),
-    resource: read("resource", 300),
+    resources,
   };
+}
+
+export function normalizeResources(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const item of value) {
+    if (typeof item !== "string") continue;
+    const resource = item.trim().slice(0, maxResourceLength);
+    const key = resource.toLocaleLowerCase();
+    if (!resource || seen.has(key)) continue;
+    result.push(resource);
+    seen.add(key);
+    if (result.length === maxSavedResources) break;
+  }
+  return result;
 }
 
 export function validateSettings(settings: AppSettings) {
@@ -67,6 +94,12 @@ export function validateSettings(settings: AppSettings) {
     throw new Error("Default duration must be between 10 and 240 minutes.");
   }
   if (!settings.subject.trim() || !settings.grade.trim()) throw new Error("Enter a default subject and grade level.");
+  if (!Array.isArray(settings.resources) || settings.resources.length > maxSavedResources) {
+    throw new Error(`Add no more than ${maxSavedResources} resources or textbooks.`);
+  }
+  if (settings.resources.some((resource) => typeof resource !== "string" || resource.trim().length > maxResourceLength)) {
+    throw new Error(`Each resource or textbook must be ${maxResourceLength} characters or fewer.`);
+  }
   return parseSettings(settings);
 }
 
@@ -79,7 +112,7 @@ export function settingsToDetails(settings: AppSettings): Partial<GenerateInput>
     duration: settings.defaultDuration,
     chapter: settings.chapter,
     unit: settings.unit,
-    resource: settings.resource,
+    resource: settings.resources[0] || "",
     preparedBy: settings.teacherName,
   };
 }

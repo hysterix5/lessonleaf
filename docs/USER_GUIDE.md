@@ -16,11 +16,11 @@ You can skip this step to try **Single Plan**. When you select **Save draft** or
 ## 2. Set your defaults
 
 1. Open **Settings** from the sidebar, or from the bottom navigation on a small screen.
-2. Under **School & teacher**, enter your application title, school name, school year, teacher name, and default lesson duration.
+2. Under **School & teacher**, enter your application title, school name, school year, teacher name, and default lesson duration. If signed in, choose a PNG, JPG, or WebP school logo up to 2 MB. You can replace or remove it later.
 3. Under **Lesson defaults**, enter the subject, grade, section, unit, chapter, and resource or textbook that you use most often.
 4. Select **Save settings**.
 
-These values help prefill new plans and printable previews. If you save settings while signed out, they stay in this browser only. After signing in, check the fields and save the values you want in your account. The **Export Drive folder link or ID** field is reserved for a future integration; it does not upload files.
+These values help prefill new plans and printable previews. The school logo appears in both print templates after you select **Save settings**. Logo files are kept in private Supabase Storage under your account. If you save settings while signed out, text settings stay in this browser only; sign in to upload a logo. The **Export Drive folder link or ID** field is reserved for a future integration; it does not upload files.
 
 ## 3. Add a class for term planning
 
@@ -49,8 +49,8 @@ The overview belongs to the selected class. A term batch cannot be generated if 
 
 1. Open **Generate plans** and select **Single Plan**.
 2. Optionally choose a week from **Explore the sample sequence** to fill in a Grade 1 Science topic. You can also type your own lesson details.
-3. Under **Lesson details**, optionally choose a saved **Class** and **Course overview**, then select a **Course week**. A class fills its subject, grade, section, school year, and duration; a course week fills its topic and unit. Choose a **Lesson category** such as Regular or Midterm.
-4. Review the subject, grade, school year, week, date, lesson topic, duration, and any optional chapter, resource, pages, or teacher name. Enter a lesson topic if one was not filled automatically.
+3. Under **Lesson details**, optionally choose a saved **Class** and **Course overview**, then select a **Course week**. A class fills its subject, grade, section, school year, and duration; a course week fills its topic and unit. Type any **Lesson category**, such as Regular, Midterm, or Skills Review.
+4. Review the subject, grade, school year, week, date, lesson topic, duration, and any optional chapter, resource, pages, or teacher name. Fields marked **\*** are required; the date and other unmarked fields may be left blank. Enter a lesson topic if one was not filled automatically.
 5. Choose **Generation mode**: **Smart Template** for an immediate structured draft, or **AI draft** for a lesson written around your topic and course guidance. AI drafting requires sign-in and a server-side Groq key. Select **Create lesson draft** or **Create AI lesson draft**. The draft appears in **Lesson preview**.
 6. Edit the plan under **Shape the content**. Work through **Goals & resources**, **Teaching flow**, and **Assessment & more**; the preview updates as you edit.
 7. Select **Save draft** to keep working later or **Mark ready** when the lesson is ready to teach. These actions save the plan to your account.
@@ -61,7 +61,7 @@ Creating a fresh draft replaces the current working draft in the editor. Save an
 
 1. Sign in, create a class, and prepare a course overview as described above, unless you will use the built-in Science sequence.
 2. Open **Generate plans** and select **Term Schedule**.
-3. Choose the **Class**, **Lesson category**, and **Term start date**. The school year, duration, and class meeting days start with the class defaults; adjust them for this batch if needed.
+3. Choose the **Class**, type any **Lesson category** (for example, Midterm or Project), and set the **Term start date**. Fields marked **\*** are required. The school year, duration, and class meeting days start with the class defaults; adjust them for this batch if needed.
 4. Set **Number of weeks** and **Starting week no.**. You can generate 1–24 weeks at a time, within course weeks 1–52.
 5. Under **Lesson content source**, choose **Saved course overview** and select an overview for this class. For a Science class, you may choose **Sample Science sequence** instead; it covers weeks 1–8.
 6. Optionally enter a default chapter and unit. Review the summary showing the number of plans and the first and last class dates. Each selected meeting day creates one plan per week, starting on or after the term start date.
@@ -71,11 +71,12 @@ The new drafts appear in **My lesson plans**. Each meeting gets its own editable
 
 ## 7. Find, edit, and print your plans
 
-1. Open **My lesson plans** to see saved drafts and plans marked **Ready to teach**.
-2. Use **Find a lesson plan** to search by topic, class, category, date, or subject, then select **Open** on a plan.
+1. Open **My lesson plans** to see saved drafts and plans marked **Ready to teach**, grouped by course overview. Plans without a course overview appear under **Other plans**.
+2. Use **Find a lesson plan** to search by course, topic, class, category, date, or subject, then select **Open** on a plan.
 3. Edit its lesson details or content in **Single Plan**. Select **Save draft** or **Mark ready** again to store your changes.
 4. In **Lesson preview**, choose a **Print template**. **Normal layout** is the default and follows the sample PDF's title, details table, and bordered sections. **Styled layout** uses the app's original design. The preview shows the selected template.
 5. Select the printer icon beside **Lesson preview** to print the selected layout. To save a PDF, choose your browser's **Save as PDF** destination in the print dialog.
-6. Select **New lesson plan** to start another plan. To remove a saved plan, select its delete icon in the library and then **Confirm delete**.
+6. To print a whole course, choose **Normal layout** or **Styled layout** in **My lesson plans**, then select **Print all** beside that course. The print dialog contains every saved lesson in the course in date order, with each lesson starting on a new page. Choose **Save as PDF** to make one PDF for the course. Search only changes which cards you see; **Print all** still includes the full course.
+7. Select **New lesson plan** to start another plan. To remove a saved plan, select its delete icon in the library and then **Confirm delete**.
 
 The sample PDF is a reference for the built-in format and Science topics; the app does not read new PDFs. If your saved items do not appear, check that you are signed in to the same account and that the Supabase tables in the [README setup](../README.md#setup) have been created. If AI reports that it is not configured, add `GROQ_API_KEY` to the app's `.env` and restart the server.

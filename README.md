@@ -4,7 +4,7 @@ A lesson planning app modeled on `public/Lesson Plan sample.pdf`. The sample is 
 
 ## Setup
 
-1. In your Supabase project's SQL Editor, run [`supabase/migrations/20260924_create_lesson_plans.sql`](supabase/migrations/20260924_create_lesson_plans.sql), [`supabase/migrations/20260924_create_user_settings.sql`](supabase/migrations/20260924_create_user_settings.sql), and [`supabase/migrations/20260924_create_classes_and_courses.sql`](supabase/migrations/20260924_create_classes_and_courses.sql). These tables use Supabase Auth user IDs and row-level security so users can access only their own data.
+1. In your Supabase project's SQL Editor, run [`supabase/migrations/20260924_create_lesson_plans.sql`](supabase/migrations/20260924_create_lesson_plans.sql), [`supabase/migrations/20260924_create_user_settings.sql`](supabase/migrations/20260924_create_user_settings.sql), [`supabase/migrations/20260924_create_classes_and_courses.sql`](supabase/migrations/20260924_create_classes_and_courses.sql), and [`supabase/migrations/20260925_create_school_logos.sql`](supabase/migrations/20260925_create_school_logos.sql). If the first three migrations are already applied, run only the new school-logo migration. It creates a private Storage bucket with user-scoped access and a 2 MB image limit.
 2. Set these variables in this app directory's `.env` file:
 
    ```env
@@ -29,12 +29,12 @@ Open [http://localhost:3000](http://localhost:3000). You can create and edit a s
 ## How to use Lessonleaf
 
 1. **Sign in or create an account** with an email and password. You can try a single plan before signing in, but saving and term generation require an account.
-2. **Set your defaults** in **Settings**: school and teacher details, school year, duration, and common lesson fields. Select **Save settings**.
+2. **Set your defaults** in **Settings**: school and teacher details, school year, duration, a school logo, and common lesson fields. Select **Save settings**. Logo upload requires sign-in.
 3. **Add a class** in **Classes** with its subject, grade, meeting days, and lesson duration. Skip this if you only need a manual single plan.
 4. **Create a course overview** in **Course** for that class. Give every scheduled week a numbered topic, or load the eight-week Science sequence for a Science class.
 5. **Create one lesson** under **Generate plans → Single Plan**: enter the lesson details, choose **Smart Template** or **AI draft**, create the draft, edit its sections, then select **Save draft** or **Mark ready**. AI mode requires sign-in.
 6. **Create a full term** under **Generate plans → Term Schedule**: choose the class, start date, number of weeks, meeting days, content source, and generation mode. Review the plan count, then generate the drafts. AI mode supports up to eight meetings per batch; Smart Template supports the full schedule range.
-7. **Revisit and print** plans from **My lesson plans**. Open a plan to edit and save it again. In **Lesson preview**, choose **Normal layout** (the default, based on the sample PDF) or **Styled layout**, then use the printer icon to print or save a PDF through your browser.
+7. **Revisit and print** plans from **My lesson plans**. Saved plans are grouped by course, with plans that have no course under **Other plans**. Open a plan to edit it, or choose a layout and select **Print all** on a course to print its complete set of lessons as one document. For one lesson, open it and use the printer icon in **Lesson preview**. Your browser can save either printout as a PDF.
 
 For each screen and the available options, open **Guide** in the app's navigation or read the [step-by-step user guide](docs/USER_GUIDE.md).
 
@@ -45,11 +45,13 @@ The term generator checks that every requested week has content before saving al
 - `app/page.tsx`: lesson builder, preview, saved-plan library, and password sign-in UI using shadcn components.
 - `components/settings-panel.tsx`: school, lesson, and account settings UI.
 - `components/lesson-preview.tsx`: normal and styled printable lesson templates.
+- `components/lesson-library.tsx` and `lib/lesson-library.ts`: course-grouped saved plans, search, and full-course printing.
 - `components/classes-panel.tsx`, `components/course-panel.tsx`, and `components/term-schedule-panel.tsx`: class and course management and term generation UI.
 - `components/ui/`: shadcn buttons, cards, form controls, tabs, badges, and dialog.
 - `lib/lesson-plan.ts`: lesson-plan data model, sample topics, validation, and local template drafting.
 - `lib/supabase.ts`: browser Supabase client and direct lesson-plan database operations.
 - `lib/settings.ts`: settings model, validation, and direct Supabase persistence.
+- `lib/school-logo.ts` and `lib/use-school-logo.ts`: logo validation and private Storage downloads for settings and print previews.
 - `lib/catalog.ts`: class and course models and direct Supabase CRUD.
 - `lib/term-schedule.ts`: meeting-date calculation and editable batch draft creation.
 - `app/actions/generate-ai.ts`, `lib/ai-generation.ts`, and `lib/ai-content.ts`: authenticated server-side AI generation, Groq response validation, and safe merging into editable drafts.
