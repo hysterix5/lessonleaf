@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import type { ClassRecord, CourseOverview } from "@/lib/catalog";
 import type { LessonPlan } from "@/lib/lesson-plan";
 import { groupPlansByCourse, searchCourseGroups, type CoursePlanGroup } from "@/lib/lesson-library";
-import { LessonPreview, type PrintTemplate } from "./lesson-preview";
+import { CourseOverviewPage, LessonPreview, type PrintTemplate } from "./lesson-preview";
 import type { AppSettings } from "@/lib/settings";
 
 type LibraryProps = {
@@ -66,6 +66,9 @@ export function LessonLibrary({ signedIn, plans, courses, classes, query, onQuer
 
 export function CoursePrintDocument({ group, template, settings, logoUrl }: { group: CoursePlanGroup; template: PrintTemplate; settings: AppSettings; logoUrl: string | null }) {
   return <div className="course-print-document" aria-label={`${group.title} printable lesson plans`}>
+    {group.course && <div className="course-print-sheet">
+      <CourseOverviewPage course={group.course} plans={group.plans} settings={settings} logoUrl={logoUrl} template={template} eagerImages />
+    </div>}
     {group.plans.map((plan, index) => <div className="course-print-sheet" key={plan.id}>
       <div className="course-print-caption"><span>{group.title}</span><span>{index + 1} / {group.plans.length}</span></div>
       <LessonPreview plan={plan} settings={settings} logoUrl={logoUrl} template={template} eagerImages />

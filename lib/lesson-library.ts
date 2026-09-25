@@ -6,6 +6,7 @@ export type CoursePlanGroup = {
   courseId: string | null;
   title: string;
   className: string;
+  course: CourseOverview | null;
   plans: LessonPlan[];
 };
 
@@ -35,6 +36,7 @@ export function groupPlansByCourse(plans: LessonPlan[], courses: CourseOverview[
         courseId,
         title: course?.title || (courseId ? "Course overview unavailable" : "Other plans"),
         className: (course && classById.get(course.classId)?.name) || plan.className || "",
+        course: course || null,
         plans: [],
       };
       groups.set(key, group);

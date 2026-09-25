@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import type { CourseOverview } from "@/lib/catalog";
 import type { LessonPlan } from "@/lib/lesson-plan";
 import type { AppSettings } from "@/lib/settings";
 import styles from "./lesson-preview.module.css";
@@ -102,4 +103,56 @@ function NormalTemplate({ plan, settings, logoUrl, eagerImages }: { plan: Lesson
 
 export function LessonPreview({ plan, settings, logoUrl, template, eagerImages = false }: { plan: LessonPlan; settings: AppSettings; logoUrl: string | null; template: PrintTemplate; eagerImages?: boolean }) {
   return template === "normal" ? <NormalTemplate plan={plan} settings={settings} logoUrl={logoUrl} eagerImages={eagerImages} /> : <StyledTemplate plan={plan} settings={settings} logoUrl={logoUrl} eagerImages={eagerImages} />;
+}
+
+function OverviewTable({ course }: { course: CourseOverview }) {
+  return <table className={styles.overviewTable} aria-label="Weekly outline">
+    <thead><tr><th>Week</th><th>Unit / Topic</th><th>Key Focus</th><th>Activity Highlight</th><th>Presentation Goal</th></tr></thead>
+    <tbody>{course.weeks.map((week) => <tr key={week.week}>
+      <td>{week.week}</td>
+      <td>{week.unit && <strong>{week.unit}</strong>}{week.unit && week.topic ? <br /> : null}{week.topic}</td>
+      <td>{week.focus || "—"}</td>
+      <td>{week.activity || "—"}</td>
+      <td>{week.presentationGoal || "—"}</td>
+    </tr>)}</tbody>
+  </table>;
+}
+
+function NormalOverview({ course, sample, settings, logoUrl, eagerImages }: { course: CourseOverview; sample: LessonPlan | undefined; settings: AppSettings; logoUrl: string | null; eagerImages: boolean }) {
+  const schoolYear = sample?.schoolYear || settings.schoolYear;
+  return <article className={styles.normal}>
+    <header className={styles.header}>
+      {logoUrl && <Image src={logoUrl} alt={`${settings.schoolName || "School"} logo`} width={64} height={64} className={styles.logo} loading={eagerImages ? "eager" : "lazy"} unoptimized />}
+      <h2>Lesson Plan - {sample?.grade}{sample?.grade && schoolYear ? " - " : ""}{schoolYear}</h2>
+      <p>Overview of Course Content{sample?.subject ? ` • ${sample.subject}` : ""}{sample?.resource ? ` • ${sample.resource}` : ""}</p>
+    </header>
+    {course.description && <p className={styles.overviewGoal}><strong>Core Goal:</strong> {course.description}</p>}
+    <OverviewTable course={course} />
+    <footer className={styles.footer}><span>{(sample?.preparedBy || settings.teacherName) && <>Prepared By: {sample?.preparedBy || settings.teacherName}</>}</span><span>{settings.schoolName}{settings.schoolName && schoolYear ? " • " : ""}{schoolYear}</span></footer>
+  </article>;
+}
+
+function StyledOverview({ course, sample, settings, logoUrl, eagerImages }: { course: CourseOverview; sample: LessonPlan | undefined; settings: AppSettings; logoUrl: string | null; eagerImages: boolean }) {
+  const schoolYear = sample?.schoolYear || settings.schoolYear;
+  return <Card className="paper-preview">
+    <div className="paper-brand">
+      {logoUrl && <Image src={logoUrl} alt={`${settings.schoolName || "School"} logo`} width={64} height={64} className="paper-logo" loading={eagerImages ? "eager" : "lazy"} unoptimized />}
+      <div className="paper-brand-text"><div className="paper-top">{settings.applicationTitle} <span>• {schoolYear}</span></div>
+        {settings.schoolName && <div className="paper-school">{settings.schoolName}</div>}
+      </div>
+    </div>
+    <h2>Overview of Course Content</h2>
+    <div className="paper-meta"><span>{course.title}</span>{sample && <span>{sample.subject} · {sample.grade}{sample.section ? ` – ${sample.section}` : ""}</span>}{sample?.className && <span>{sample.className}</span>}</div>
+    <Separator className="paper-rule" />
+    <PreviewBlock title="Core goal" text={course.description} />
+    <section className="preview-block"><h3>Weekly outline</h3><OverviewTable course={course} /></section>
+    {(sample?.preparedBy || settings.teacherName) && <div className="prepared">Prepared by: {sample?.preparedBy || settings.teacherName}</div>}
+  </Card>;
+}
+
+export function CourseOverviewPage({ course, plans, settings, logoUrl, template, eagerImages = false }: { course: CourseOverview; plans: LessonPlan[]; settings: AppSettings; logoUrl: string | null; template: PrintTemplate; eagerImages?: boolean }) {
+  const sample = plans[0];
+  return template === "normal"
+    ? <NormalOverview course={course} sample={sample} settings={settings} logoUrl={logoUrl} eagerImages={eagerImages} />
+    : <StyledOverview course={course} sample={sample} settings={settings} logoUrl={logoUrl} eagerImages={eagerImages} />;
 }
