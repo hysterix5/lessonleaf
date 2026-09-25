@@ -2,16 +2,17 @@
 
 import { useState } from "react";
 import type { Session } from "@supabase/supabase-js";
+import { toast } from "sonner";
 import { Check, LockKeyhole, Settings2, Sparkles } from "lucide-react";
+import { ErrorAlert } from "@/components/error-alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getSupabase } from "@/lib/supabase";
+import { errorMessage } from "@/lib/feedback";
 import type { AppSettings } from "@/lib/settings";
-
-type Notice = { text: string; error?: boolean };
 
 function SettingsField({ label, value, onChange, type = "text", placeholder, min, max }: {
   label: string;
@@ -25,12 +26,11 @@ function SettingsField({ label, value, onChange, type = "text", placeholder, min
   return <Label className="field"><span>{label}</span><Input value={value} type={type} min={min} max={max} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} /></Label>;
 }
 
-export function SettingsPanel({ settings, session, recovery, onSave, onNotice, onSignIn, onPasswordChanged }: {
+export function SettingsPanel({ settings, session, recovery, onSave, onSignIn, onPasswordChanged }: {
   settings: AppSettings;
   session: Session | null;
   recovery: boolean;
   onSave: (settings: AppSettings) => Promise<void>;
-  onNotice: (notice: Notice) => void;
   onSignIn: () => void;
   onPasswordChanged: () => void;
 }) {
@@ -39,31 +39,36 @@ export function SettingsPanel({ settings, session, recovery, onSave, onNotice, o
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   function change<K extends keyof AppSettings>(key: K, value: AppSettings[K]) {
     setDraft((current) => ({ ...current, [key]: value }));
+    setSettingsError(null);
   }
 
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSaving(true);
+    setSaving(true); setSettingsError(null);
     try { await onSave(draft); }
+    catch (error) { setSettingsError(errorMessage(error, "Could not save settings.")); }
     finally { setSaving(false); }
   }
 
   async function changePassword(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (password.length < 8) { onNotice({ text: "Use a password with at least 8 characters.", error: true }); return; }
-    if (password !== confirmPassword) { onNotice({ text: "The passwords do not match.", error: true }); return; }
+    setPasswordError(null);
+    if (password.length < 8) { setPasswordError("Use a password with at least 8 characters."); return; }
+    if (password !== confirmPassword) { setPasswordError("The passwords do not match."); return; }
     setChangingPassword(true);
     try {
       const { error } = await getSupabase().auth.updateUser({ password });
       if (error) throw error;
       setPassword(""); setConfirmPassword("");
       onPasswordChanged();
-      onNotice({ text: "Password updated. Use it the next time you sign in." });
+      toast.success("Password updated. Use it the next time you sign in.");
     } catch (error) {
-      onNotice({ text: error instanceof Error ? error.message : "Could not update your password.", error: true });
+      setPasswordError(errorMessage(error, "Could not update your password."));
     } finally { setChangingPassword(false); }
   }
 
@@ -88,12 +93,13 @@ export function SettingsPanel({ settings, session, recovery, onSave, onNotice, o
         <div className="span-2"><SettingsField label="Chapter" value={draft.chapter} onChange={(value) => change("chapter", value)} /></div>
         <div className="span-2"><SettingsField label="Resource / textbook" value={draft.resource} onChange={(value) => change("resource", value)} /></div>
       </div></Card>
+      {settingsError && <ErrorAlert title="Could not save settings" message={settingsError} />}
       <div className="settings-save"><Button type="submit" className="primary-button" disabled={saving}><Check size={16} /> {saving ? "Saving…" : "Save settings"}</Button><span>{session ? "Saved to your account" : "Saved in this browser only"}</span></div>
     </form>
 
     <Card className="settings-card account-card"><div className="settings-card-heading"><div className="settings-card-icon"><LockKeyhole size={20} /></div><div><h2>Account &amp; password</h2><p>{session ? session.user.email : "Sign in to keep plans and settings in your account"}</p></div></div>
-      {session ? <form onSubmit={changePassword} className="password-form"><div className="settings-fields"><SettingsField label="New password" type="password" value={password} onChange={setPassword} placeholder="At least 8 characters" /><SettingsField label="Confirm new password" type="password" value={confirmPassword} onChange={setConfirmPassword} placeholder="Repeat password" /></div><Button type="submit" className="secondary-button" disabled={changingPassword || !password}>{changingPassword ? "Updating…" : recovery ? "Set password" : "Change password"}</Button></form> : <Button type="button" className="secondary-button" onClick={onSignIn}>Sign in or create account</Button>}
+      {session ? <form onSubmit={changePassword} className="password-form"><div className="settings-fields"><SettingsField label="New password" type="password" value={password} onChange={(value) => { setPassword(value); setPasswordError(null); }} placeholder="At least 8 characters" /><SettingsField label="Confirm new password" type="password" value={confirmPassword} onChange={(value) => { setConfirmPassword(value); setPasswordError(null); }} placeholder="Repeat password" /></div>{passwordError && <ErrorAlert title="Could not update password" message={passwordError} className="form-error" />}<Button type="submit" className="secondary-button" disabled={changingPassword || !password}>{changingPassword ? "Updating…" : recovery ? "Set password" : "Change password"}</Button></form> : <Button type="button" className="secondary-button" onClick={onSignIn}>Sign in or create account</Button>}
     </Card>
-    <div className="settings-ai"><Badge>COMING LATER</Badge><div><h2>AI generation</h2><p>AI options will appear here when generation is enabled. Lesson drafts currently use the editable sample-based template.</p></div></div>
+    <div className="settings-ai"><Badge>AI DRAFTING</Badge><div><h2>AI generation</h2><p>Choose AI draft in Single Plan or Term Schedule to create editable lessons with GPT-OSS 120B. Sign in first; the server uses its private Groq key.</p></div></div>
   </div>;
 }

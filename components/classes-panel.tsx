@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { BookOpen, CalendarDays, Plus, Trash2 } from "lucide-react";
+import { ErrorAlert } from "@/components/error-alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { WeekdayPicker, weekdays } from "@/components/weekday-picker";
 import type { ClassInput, ClassRecord } from "@/lib/catalog";
 import type { AppSettings } from "@/lib/settings";
+import { errorMessage } from "@/lib/feedback";
 
 function emptyClass(settings: AppSettings): ClassInput {
   return {
@@ -35,32 +37,34 @@ export function ClassesPanel({ classes, settings, signedIn, onSave, onDelete, on
   const [draft, setDraft] = useState<ClassInput>(() => emptyClass(settings));
   const [busy, setBusy] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [listError, setListError] = useState<string | null>(null);
 
-  function newClass() { setEditingId(null); setDraft(emptyClass(settings)); setConfirmId(null); }
+  function newClass() { setEditingId(null); setDraft(emptyClass(settings)); setConfirmId(null); setFormError(null); }
   function edit(item: ClassRecord) {
     setEditingId(item.id);
     setDraft({ name: item.name, subject: item.subject, grade: item.grade, section: item.section, schoolYear: item.schoolYear, meetingDays: item.meetingDays, duration: item.duration });
-    setConfirmId(null);
+    setConfirmId(null); setFormError(null);
   }
-  function change<K extends keyof ClassInput>(key: K, value: ClassInput[K]) { setDraft((current) => ({ ...current, [key]: value })); }
+  function change<K extends keyof ClassInput>(key: K, value: ClassInput[K]) { setDraft((current) => ({ ...current, [key]: value })); setFormError(null); }
   async function save(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setBusy(true);
+    event.preventDefault(); setBusy(true); setFormError(null);
     try { const result = await onSave(draft, editingId || undefined); setEditingId(result.id); }
-    catch { /* The parent shows the database or validation message. */ }
+    catch (error) { setFormError(errorMessage(error, "Could not save the class.")); }
     finally { setBusy(false); }
   }
   async function remove(id: string) {
     if (confirmId !== id) { setConfirmId(id); return; }
-    setBusy(true);
+    setBusy(true); setListError(null);
     try { await onDelete(id); if (editingId === id) newClass(); setConfirmId(null); }
-    catch { /* The parent shows the database message. */ }
+    catch (error) { setListError(errorMessage(error, "Could not delete the class.")); }
     finally { setBusy(false); }
   }
 
   return <div className="content workspace-content"><div className="workspace-heading"><div><span className="kicker">YOUR TEACHING SPACE</span><h1>Classes</h1><p>Keep each class’s subject, grade, meeting days, and lesson length in one place.</p></div>{signedIn && <Button type="button" className="secondary-button" onClick={newClass}><Plus size={16} /> New class</Button>}</div>
     {!signedIn ? <Card className="workspace-empty"><BookOpen size={27} /><h2>Set up your classes</h2><p>Sign in to save classes and use them in term schedules.</p><Button type="button" className="primary-button" onClick={onSignIn}>Sign in to continue</Button></Card> : <div className="workspace-grid">
-      <div className="workspace-list"><div className="workspace-list-heading"><strong>Saved classes</strong><span>{classes.length}</span></div>{classes.length ? classes.map((item) => <Card className={`workspace-item ${editingId === item.id ? "selected" : ""}`} key={item.id}><Button type="button" className="workspace-item-main" onClick={() => edit(item)}><span className="workspace-item-icon"><BookOpen size={19} /></span><span><strong>{item.name}</strong><small>{item.subject} · {item.grade}{item.section ? ` · ${item.section}` : ""}</small><em>{weekdays.filter((day) => item.meetingDays.includes(day.value)).map((day) => day.label).join(", ")} · {item.duration} min</em></span></Button><Button type="button" variant="ghost" className={`item-delete ${confirmId === item.id ? "confirm" : ""}`} onClick={() => remove(item.id)} disabled={busy} aria-label={confirmId === item.id ? `Confirm delete ${item.name}` : `Delete ${item.name}`}><Trash2 size={15} /> {confirmId === item.id ? "Confirm" : ""}</Button></Card>) : <div className="workspace-list-empty">No classes yet. Add your first class to build a term schedule.</div>}</div>
-      <Card className="workspace-editor"><div className="workspace-editor-heading"><span className="editor-symbol"><CalendarDays size={19} /></span><div><h2>{editingId ? "Edit class" : "New class"}</h2><p>These details fill the schedule generator automatically.</p></div></div><form onSubmit={save}><div className="settings-fields"><div className="span-2"><ClassField label="Class name" value={draft.name} onChange={(value) => change("name", value)} placeholder="e.g. Afterschool English · Grade 1–3" /></div><ClassField label="Subject" value={draft.subject} onChange={(value) => change("subject", value)} /><ClassField label="Grade level" value={draft.grade} onChange={(value) => change("grade", value)} /><ClassField label="Section" value={draft.section} onChange={(value) => change("section", value)} placeholder="Optional" /><ClassField label="School year" value={draft.schoolYear} onChange={(value) => change("schoolYear", value)} /><ClassField label="Lesson duration (minutes)" type="number" value={draft.duration} onChange={(value) => change("duration", Number(value))} /><div className="span-2 field"><span>Class meeting days</span><WeekdayPicker value={draft.meetingDays} onChange={(value) => change("meetingDays", value)} /></div></div><div className="workspace-form-footer"><Button type="submit" className="primary-button" disabled={busy}>{busy ? "Saving…" : editingId ? "Save changes" : "Add class"}</Button></div></form></Card>
+      <div className="workspace-list"><div className="workspace-list-heading"><strong>Saved classes</strong><span>{classes.length}</span></div>{listError && <ErrorAlert title="Could not delete class" message={listError} />}{classes.length ? classes.map((item) => <Card className={`workspace-item ${editingId === item.id ? "selected" : ""}`} key={item.id}><Button type="button" className="workspace-item-main" onClick={() => edit(item)}><span className="workspace-item-icon"><BookOpen size={19} /></span><span><strong>{item.name}</strong><small>{item.subject} · {item.grade}{item.section ? ` · ${item.section}` : ""}</small><em>{weekdays.filter((day) => item.meetingDays.includes(day.value)).map((day) => day.label).join(", ")} · {item.duration} min</em></span></Button><Button type="button" variant="ghost" className={`item-delete ${confirmId === item.id ? "confirm" : ""}`} onClick={() => remove(item.id)} disabled={busy} aria-label={confirmId === item.id ? `Confirm delete ${item.name}` : `Delete ${item.name}`}><Trash2 size={15} /> {confirmId === item.id ? "Confirm" : ""}</Button></Card>) : <div className="workspace-list-empty">No classes yet. Add your first class to build a term schedule.</div>}</div>
+      <Card className="workspace-editor"><div className="workspace-editor-heading"><span className="editor-symbol"><CalendarDays size={19} /></span><div><h2>{editingId ? "Edit class" : "New class"}</h2><p>These details fill the schedule generator automatically.</p></div></div><form onSubmit={save}><div className="settings-fields"><div className="span-2"><ClassField label="Class name" value={draft.name} onChange={(value) => change("name", value)} placeholder="e.g. Afterschool English · Grade 1–3" /></div><ClassField label="Subject" value={draft.subject} onChange={(value) => change("subject", value)} /><ClassField label="Grade level" value={draft.grade} onChange={(value) => change("grade", value)} /><ClassField label="Section" value={draft.section} onChange={(value) => change("section", value)} placeholder="Optional" /><ClassField label="School year" value={draft.schoolYear} onChange={(value) => change("schoolYear", value)} /><ClassField label="Lesson duration (minutes)" type="number" value={draft.duration} onChange={(value) => change("duration", Number(value))} /><div className="span-2 field"><span>Class meeting days</span><WeekdayPicker value={draft.meetingDays} onChange={(value) => change("meetingDays", value)} /></div></div>{formError && <ErrorAlert title="Could not save class" message={formError} className="form-error" />}<div className="workspace-form-footer"><Button type="submit" className="primary-button" disabled={busy}>{busy ? "Saving…" : editingId ? "Save changes" : "Add class"}</Button></div></form></Card>
     </div>}
   </div>;
 }
