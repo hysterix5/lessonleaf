@@ -45,11 +45,11 @@ export function GuidePanel({ signedIn, onNavigate, onSignIn }: {
       <p>Follow these steps to build one lesson or a full term of editable plans. You can explore a Smart Template plan before signing in; AI drafting, saving plans, and generating a term require an account.</p>
     </div>
 
-    <nav className={styles.contents} aria-label="Guide steps">
+    <nav className={styles.contents} data-motion-list aria-label="Guide steps">
       {sections.map((section, index) => <a key={section.id} href={`#guide-${section.id}`}><span>{String(index + 1).padStart(2, "0")}</span><strong>{section.title}</strong><small>{section.summary}</small></a>)}
     </nav>
 
-    <div className={styles.steps}>
+    <div className={styles.steps} data-motion-list>
       <GuideStep number={1} id="account" title="Create an account or sign in" action={signedIn ? "Open settings" : "Open sign-in"} onAction={signedIn ? () => onNavigate("settings") : onSignIn} note={<>You can create a single draft without signing in. To save it, use <strong>Save draft</strong> or <strong>Mark ready</strong> and sign in when prompted.</>}>
         <li>Select <strong>Sign in</strong> at the top of the app.</li>
         <li>For a new account, choose <strong>Create account</strong>, enter your email and a password of at least eight characters, and submit. Follow the confirmation email if your school requires it.</li>
