@@ -1,8 +1,6 @@
-import { generatePlan, parseGenerateInput, parseLessonCategory, weekPresets, type LessonPlan } from "./lesson-plan";
+import { generatePlan, parseGenerateInput, parseLessonCategory, type LessonPlan } from "./lesson-plan";
 import type { ClassRecord, CourseOverview, CourseWeek } from "./catalog";
 import type { AppSettings } from "./settings";
-
-export type ContentSource = "course" | "sample";
 
 export type TermScheduleInput = {
   classRecord: ClassRecord;
@@ -13,8 +11,7 @@ export type TermScheduleInput = {
   startingWeek: number;
   duration: number;
   meetingDays: number[];
-  contentSource: ContentSource;
-  overview?: CourseOverview;
+  overview: CourseOverview;
   chapter: string;
   unit: string;
   resource: string;
@@ -52,28 +49,27 @@ export function buildTermPlans(input: TermScheduleInput, settings: AppSettings):
   const category = parseLessonCategory(input.category);
   if (!input.schoolYear.trim()) throw new Error("Enter a school year.");
   if (!Number.isInteger(input.duration) || input.duration < 10 || input.duration > 240) throw new Error("Duration must be between 10 and 240 minutes.");
-  if (input.contentSource === "sample" && !/\bscience\b/i.test(input.classRecord.subject)) throw new Error("The sample Science sequence is available only for Science classes.");
-  if (input.contentSource === "course" && (!input.overview || input.overview.classId !== input.classRecord.id)) throw new Error("Choose a saved course overview for this class.");
-  const courseWeeks = new Map<number, CourseWeek>(input.overview?.weeks.map((week) => [week.week, week]) || []);
+  if (!input.overview || input.overview.classId !== input.classRecord.id) throw new Error("Choose a saved course overview for this class.");
+  const courseWeeks = new Map<number, CourseWeek>(input.overview.weeks.map((week) => [week.week, week]));
   const batchId = crypto.randomUUID();
   return meetings.map((meeting) => {
-    const content = input.contentSource === "course" ? courseWeeks.get(meeting.week) : weekPresets.find((week) => week.week === meeting.week);
-    if (!content) throw new Error(`No ${input.contentSource === "course" ? "course" : "sample"} content is available for week ${meeting.week}.`);
+    const content = courseWeeks.get(meeting.week);
+    if (!content) throw new Error(`No course content is available for week ${meeting.week}.`);
     const plan = generatePlan(parseGenerateInput({
       subject: input.classRecord.subject, grade: input.classRecord.grade, section: input.classRecord.section,
       schoolYear: input.schoolYear, week: meeting.week, topic: content.topic, date: meeting.date,
       duration: input.duration, chapter: input.chapter, unit: content.unit || input.unit,
       resource: input.resource, pages: "", preparedBy: settings.teacherName,
     }), {
-      focus: "focus" in content ? content.focus : content.keyFocus,
-      activity: "activity" in content ? content.activity : content.activityHighlight,
+      focus: content.focus,
+      activity: content.activity,
       presentationGoal: content.presentationGoal,
     });
     return {
       ...plan, title: `${content.topic} · ${meeting.date} · Week ${meeting.week}`,
       category, classId: input.classRecord.id,
       className: input.classRecord.name,
-      courseOverviewId: input.contentSource === "course" ? input.overview?.id : undefined,
+      courseOverviewId: input.overview.id,
       termBatchId: batchId,
     };
   });

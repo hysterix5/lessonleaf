@@ -13,7 +13,7 @@ export async function generateAiLessonDrafts(accessToken: string, requests: AiLe
   if (!Array.isArray(requests) || !requests.length || requests.length > maxAiTermPlans) {
     return { ok: false, error: `AI generation supports up to ${maxAiTermPlans} lessons at a time. Reduce the schedule or use Smart Template.` };
   }
-  if (JSON.stringify(requests).length > 20_000) return { ok: false, error: "Lesson details are too long for AI generation." };
+  if (JSON.stringify(requests).length > maxAiTermPlans * 2_500) return { ok: false, error: "Lesson details are too long for AI generation." };
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;

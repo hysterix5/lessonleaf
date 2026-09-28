@@ -24,16 +24,16 @@ export const defaultSettings: AppSettings = {
   applicationTitle: "Lessonleaf Lesson Plan Generator",
   schoolName: "",
   schoolLogoPath: "",
-  schoolYear: "2026–2027",
+  schoolYear: "",
   teacherName: "",
   defaultDuration: 60,
   exportDriveFolder: "",
-  subject: "Science",
-  grade: "Grade 1",
-  section: "A",
-  chapter: "Exploring Ecosystems and Everyday Matter",
-  unit: "Unit 3",
-  resources: ["Academic Team, Aksorn Charoen Tat Act – Textbook"],
+  subject: "",
+  grade: "",
+  section: "",
+  chapter: "",
+  unit: "",
+  resources: [],
 };
 
 export const guestSettingsKey = "lessonleaf-guest-settings";

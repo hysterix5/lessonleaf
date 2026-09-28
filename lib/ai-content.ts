@@ -1,6 +1,6 @@
 import { parseGenerateInput, type LessonPlan } from "./lesson-plan";
 
-export const maxAiTermPlans = 8;
+export const maxAiTermPlans = 12;
 
 export type AiLessonRequest = {
   details: Pick<LessonPlan, "subject" | "grade" | "schoolYear" | "week" | "topic" | "date" | "duration" | "chapter" | "unit" | "resource" | "pages">;
