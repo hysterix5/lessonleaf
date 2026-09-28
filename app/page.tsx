@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import type { Session } from "@supabase/supabase-js";
 import { ArrowRight, BookOpen, BookOpenText, CalendarRange, Check, ChevronRight, CircleHelp, Clock3, FileText, LayoutGrid, Leaf, LoaderCircle, LogOut, Plus, Printer, School, Settings2, Sparkles, Trash2, type LucideIcon } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { AiModelSelect } from "@/components/ai-model-select";
 import { WorkspaceNav, type WorkspaceView } from "@/components/workspace-nav";
 import { ClassesPanel } from "@/components/classes-panel";
@@ -55,6 +57,15 @@ function Icon({ name, size = 19 }: { name: string; size?: number }) {
   return Component ? <Component size={size} strokeWidth={1.8} aria-hidden="true" /> : null;
 }
 
+function GoogleMark() {
+  return <svg aria-hidden="true" viewBox="0 0 48 48" className="size-5">
+    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 5.38 6.51 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z" />
+    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.27 5.48-4.8 7.18l7.73 6C44.38 38.03 46.98 31.68 46.98 24.55Z" />
+    <path fill="#FBBC05" d="M10.53 28.59a14.41 14.41 0 0 1 0-9.18l-7.98-6.2a23.99 23.99 0 0 0 0 21.58l7.98-6.2Z" />
+    <path fill="#34A853" d="M24 48c6.48 0 11.92-2.13 15.89-5.8l-7.73-6c-2.14 1.44-4.89 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.2C6.51 42.62 14.62 48 24 48Z" />
+  </svg>;
+}
+
 function Field({ label, value, onChange, type = "text", placeholder, required = false, min, max }: { label: string; value: string | number; onChange: (value: string) => void; type?: string; placeholder?: string; required?: boolean; min?: number; max?: number }) {
   return <Label className="field"><span>{label}{required && <b className="required-mark"> *</b>}</span><Input type={type} value={value} placeholder={placeholder} required={required} min={min} max={max} onChange={(event) => onChange(event.target.value)} /></Label>;
 }
@@ -93,6 +104,7 @@ export default function Home() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [authMode, setAuthMode] = useState<AuthMode>("sign-in");
   const [authError, setAuthError] = useState<string | null>(null);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [recovery, setRecovery] = useState(false);
   const [loading, setLoading] = useState(false);
   const [waitingForAi, setWaitingForAi] = useState(false);
@@ -112,7 +124,23 @@ export default function Home() {
     };
     void (async () => {
       await Promise.resolve();
+      if (!active) return;
       let hasWorkingDraft = false;
+      const authUrl = new URL(window.location.href);
+      const hashParams = new URLSearchParams(authUrl.hash.slice(1));
+      const redirectError = authUrl.searchParams.get("error") || hashParams.get("error");
+      const redirectErrorCode = authUrl.searchParams.get("error_code") || hashParams.get("error_code");
+      if (redirectError || redirectErrorCode) {
+        if (active) {
+          setAuthError(redirectError === "access_denied" || redirectErrorCode === "access_denied"
+            ? "Sign-in was canceled. You can try again anytime."
+            : "Sign-in did not finish. Please try again or use your email and password.");
+          setAuthOpen(true);
+        }
+        for (const key of ["error", "error_code", "error_description"]) authUrl.searchParams.delete(key);
+        authUrl.hash = "";
+        window.history.replaceState(window.history.state, "", `${authUrl.pathname}${authUrl.search}`);
+      }
       try {
         if (active) {
           const guestSettings = readGuestSettings();
@@ -322,6 +350,25 @@ export default function Home() {
     finally { setLoading(false); }
   }
 
+  async function signInWithGoogle() {
+    setGoogleLoading(true);
+    setAuthError(null);
+    try {
+      const { error } = await getSupabase().auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.origin },
+      });
+      if (error) throw error;
+    } catch (error) {
+      const originalMessage = error instanceof Error ? error.message.trim() : "";
+      const message = errorMessage(error, "Could not start Google sign-in. Please try again or use your email and password.");
+      setAuthError(message === originalMessage
+        ? "Could not start Google sign-in. Please try again or use your email and password."
+        : message);
+      setGoogleLoading(false);
+    }
+  }
+
   async function persistClass(input: ClassInput, id?: string) {
     if (!session) throw new Error("Sign in to save classes.");
     const result = await saveClass(session.user.id, input, id);
@@ -393,6 +440,7 @@ export default function Home() {
       <div className="side-label">YOUR WORKSPACE</div>
       <WorkspaceNav view={view} onNavigate={navigate} savedCount={saved.length} />
       <div className="sidebar-bottom">
+        <nav className="sidebar-legal" aria-label="Legal information"><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms and Conditions</Link></nav>
         <span className="sidebar-footer"><Leaf size={14} aria-hidden="true" /> More time for what matters.</span>
       </div>
     </aside>
@@ -402,6 +450,7 @@ export default function Home() {
         <span className="breadcrumb">Workspace <ChevronRight size={14} aria-hidden="true" /> <strong>{viewTitle}</strong></span>
         <div className="top-actions">
           <Badge className="mode-pill"><Sparkles size={13} aria-hidden="true" /> A helping hand for every lesson</Badge>
+          <ThemeToggle />
           {session ? <Button type="button" className="account-button" onClick={logout} aria-label="Sign out"><span className="account-avatar" aria-hidden="true">{session.user?.email?.slice(0, 1).toUpperCase() || "T"}</span><span>Sign out</span><LogOut size={15} aria-hidden="true" /></Button> : <Button type="button" className="sign-in-button" onClick={() => setAuthOpen(true)}>Sign in <ArrowRight size={15} aria-hidden="true" /></Button>}
         </div>
       </header>
@@ -443,6 +492,7 @@ export default function Home() {
       : view === "guide" ? <GuidePanel signedIn={!!session} onNavigate={(destination) => { setView(destination); window.scrollTo(0, 0); }} onSignIn={() => setAuthOpen(true)} />
       : <LessonLibrary signedIn={!!session} plans={saved} courses={courses} classes={classes} query={libraryQuery} onQueryChange={setLibraryQuery} onNew={reset} onSignIn={() => setAuthOpen(true)} onOpen={open} onDelete={remove} confirmDelete={confirmDelete} deleting={loading} template={printTemplate} onTemplateChange={setPrintTemplate} onPrintCourse={setPrintCourse} />}
       {printCourse && <CoursePrintDocument group={printCourse} template={printTemplate} settings={settings} logoUrl={logoUrl} />}
+      <footer className="app-footer"><span>© 2026 Lessonleaf</span><nav aria-label="Legal information"><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms and Conditions</Link></nav></footer>
     </main>
     <Dialog open={authOpen} onOpenChange={(open) => { setAuthOpen(open); if (!open) { setAuthError(null); setPassword(""); setConfirmPassword(""); setAuthMode("sign-in"); } }}>
       <DialogContent className="auth-modal">
@@ -450,11 +500,18 @@ export default function Home() {
         <span className="kicker">YOUR LESSON LIBRARY</span>
         <DialogHeader>
           <DialogTitle>{authMode === "sign-up" ? "Create your account" : authMode === "reset" ? "Reset your password" : "Welcome back"}</DialogTitle>
-          <DialogDescription>{authMode === "sign-up" ? "Create a password to keep your lesson plans and settings in your account." : authMode === "reset" ? "Enter your email and we’ll send a password reset link." : "Sign in with your email and password to continue planning."}</DialogDescription>
+          <DialogDescription>{authMode === "sign-up" ? "Keep your lesson plans and settings in your account." : authMode === "reset" ? "Enter your email and we’ll send a password reset link." : "Sign in to continue planning."}</DialogDescription>
         </DialogHeader>
         {authError && <ErrorAlert title="Could not continue" message={authError} />}
-        <form onSubmit={submitAuth} onChange={() => setAuthError(null)}><Field label="Email address" type="email" value={email} onChange={setEmail} placeholder="you@school.edu" />{authMode !== "reset" && <Field label="Password" type="password" value={password} onChange={setPassword} placeholder={authMode === "sign-up" ? "At least 8 characters" : "Your password"} />}{authMode === "sign-up" && <Field label="Confirm password" type="password" value={confirmPassword} onChange={setConfirmPassword} placeholder="Repeat password" />}<Button type="submit" className="primary-button" disabled={loading || !email.trim() || (authMode !== "reset" && !password)}>{loading ? "Please wait…" : authMode === "sign-up" ? "Create account" : authMode === "reset" ? "Send reset link" : "Sign in"} <Icon name="arrow" size={17} /></Button></form>
+        {authMode !== "reset" && <>
+          <Button type="button" className="google-button" disabled={loading || googleLoading} onClick={signInWithGoogle}>
+            <GoogleMark />{googleLoading ? "Connecting to Google…" : "Continue with Google"}
+          </Button>
+          <div className="auth-divider"><span>or continue with email</span></div>
+        </>}
+        <form onSubmit={submitAuth} onChange={() => setAuthError(null)}><Field label="Email address" type="email" value={email} onChange={setEmail} placeholder="you@school.edu" />{authMode !== "reset" && <Field label="Password" type="password" value={password} onChange={setPassword} placeholder={authMode === "sign-up" ? "At least 8 characters" : "Your password"} />}{authMode === "sign-up" && <Field label="Confirm password" type="password" value={confirmPassword} onChange={setConfirmPassword} placeholder="Repeat password" />}<Button type="submit" className="primary-button" disabled={loading || googleLoading || !email.trim() || (authMode !== "reset" && !password)}>{loading ? "Please wait…" : authMode === "sign-up" ? "Create account" : authMode === "reset" ? "Send reset link" : "Sign in"} <Icon name="arrow" size={17} /></Button></form>
         <div className="auth-links">{authMode === "sign-in" ? <><Button type="button" variant="ghost" onClick={() => { setAuthMode("reset"); setAuthError(null); }}>Forgot password?</Button><Button type="button" variant="ghost" onClick={() => { setAuthMode("sign-up"); setAuthError(null); }}>Create account</Button></> : <Button type="button" variant="ghost" onClick={() => { setAuthMode("sign-in"); setAuthError(null); }}>Back to sign in</Button>}</div>
+        <p className="auth-legal">By continuing, you agree to our <Link href="/terms">Terms and Conditions</Link>. Read our <Link href="/privacy">Privacy Policy</Link>.</p>
       </DialogContent>
     </Dialog>
   </div>;

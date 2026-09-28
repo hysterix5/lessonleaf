@@ -1,0 +1,53 @@
+.shell { min-height: 100vh; background: var(--canvas); color: var(--ink); }
+.header { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 82px; padding: 16px max(24px, calc((100vw - 1160px) / 2)); border-bottom: 1px solid var(--line); background: #fffefb; }
+.header :global(.brand-logo-wordmark) { width: 172px; }
+.topNav, .footer nav { display: flex; flex-wrap: wrap; gap: 10px 24px; }
+.topNav a { color: #53634f; font-size: 13px; font-weight: 600; }
+.topNav a:hover, .topNav a[aria-current="page"], .footer a:hover { color: var(--primary); text-decoration: underline; text-underline-offset: 4px; }
+.main { max-width: 1160px; margin: 0 auto; padding: 42px 24px 90px; }
+.intro { max-width: 760px; }
+.back { display: inline-block; margin-bottom: 42px; color: #4c6a42; font-size: 13px; font-weight: 600; }
+.back:hover { text-decoration: underline; text-underline-offset: 4px; }
+.eyebrow { display: block; margin-bottom: 13px; color: #648442; font-size: 11px; font-weight: 700; letter-spacing: 2px; }
+.intro h1 { margin: 0 0 18px; font: 400 clamp(36px, 5vw, 56px)/1.1 var(--font-heading); letter-spacing: -.03em; }
+.intro p { max-width: 650px; margin: 0; color: #526054; font-size: 16px; line-height: 1.7; }
+.date { display: block; margin-top: 20px; color: #68756c; font-size: 12px; }
+.layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); align-items: start; gap: 64px; margin-top: 44px; }
+.contents { position: sticky; top: 28px; display: grid; gap: 15px; padding: 22px 20px; border: 1px solid var(--line); border-radius: 14px; background: #fffefb; }
+.contents strong { margin-bottom: 4px; color: #435340; font-size: 12px; }
+.contents a { color: #5a6a5a; font-size: 12px; line-height: 1.4; }
+.contents a:hover { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+.article { min-width: 0; padding: 8px 0; }
+.section { scroll-margin-top: 26px; padding: 0 0 25px; margin-bottom: 30px; border-bottom: 1px solid var(--line); }
+.section:last-child { border-bottom: 0; }
+.section h2 { margin: 0 0 14px; color: var(--ink); font: 400 27px/1.25 var(--font-heading); }
+.section p, .section li { color: #4d5a50; font-size: 14px; line-height: 1.8; }
+.section p { margin: 0 0 14px; }
+.section ul { margin: 0 0 15px; padding-left: 22px; }
+.section li + li { margin-top: 7px; }
+.section a { color: #2d6744; text-decoration: underline; text-underline-offset: 3px; }
+.section strong { color: #304637; }
+.footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px 24px; padding: 24px max(24px, calc((100vw - 1160px) / 2)); border-top: 1px solid var(--line); background: #fffefb; color: #68756c; font-size: 12px; }
+@media (max-width: 760px) {
+  .header { align-items: flex-start; flex-direction: column; gap: 18px; padding: 20px; }
+  .topNav { gap: 10px 18px; }
+  .main { padding: 28px 20px 60px; }
+  .back { margin-bottom: 34px; }
+  .layout { grid-template-columns: 1fr; gap: 25px; margin-top: 32px; }
+  .contents { position: static; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px 17px; }
+  .contents strong { grid-column: 1 / -1; }
+  .footer { padding: 22px 20px; }
+}
+@media print { .header, .contents, .footer, .back { display: none; } .main { padding: 0; } .layout { display: block; } .section { break-inside: avoid; } }
+
+:global(.dark) .header, :global(.dark) .contents, :global(.dark) .footer { background: var(--card); }
+:global(.dark) .topNav a, :global(.dark) .contents a, :global(.dark) .date { color: var(--text-muted); }
+:global(.dark) .back, :global(.dark) .eyebrow, :global(.dark) .section a,
+:global(.dark) .topNav a:hover, :global(.dark) .topNav a[aria-current="page"],
+:global(.dark) .contents a:hover { color: var(--primary); }
+:global(.dark) .intro p, :global(.dark) .section p, :global(.dark) .section li { color: #c2d1c3; }
+:global(.dark) .contents strong, :global(.dark) .section strong { color: var(--ink); }
+@media print {
+  :global(.dark) .intro p, :global(.dark) .section p, :global(.dark) .section li { color: #4d5a50; }
+  :global(.dark) .section a { color: #2d6744; }
+}

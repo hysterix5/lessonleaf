@@ -33,3 +33,8 @@
 @media (max-width: 760px) { .root { padding: 27px 17px 60px; } .introTitle h1 { font-size: 29px; } .reference { align-items: flex-start; flex-wrap: wrap; } .reference a { margin-left: 34px; } }
 @media (max-width: 520px) { .contents { grid-template-columns: repeat(2, minmax(0, 1fr)); } .contents a { min-height: 100px; padding: 12px; } .stepCard { padding: 20px 17px; } .stepHeader h2 { font-size: 19px; } .instructions { font-size: 11px; } }
 @media print { .root { display: none !important; } }
+
+:global(.dark) .contents a, :global(.dark) .stepCard, :global(.dark) .stepAction { background: var(--card); border-color: var(--line); }
+:global(.dark) .contents span, :global(.dark) .instructions li::marker { color: #b7d99a; }
+:global(.dark) .note, :global(.dark) .reference { background: #263a2c; border-color: var(--line); color: var(--text-muted); }
+:global(.dark) .stepAction:hover { background: var(--accent); }

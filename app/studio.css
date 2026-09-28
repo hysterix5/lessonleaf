@@ -59,6 +59,9 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
 .side-nav button:nth-child(5) { margin-top: 20px; }
 .nav-count { display: grid; place-items: center; min-width: 22px; height: 22px; margin-left: auto; padding: 0 5px; border: 1px solid #dde5d2; border-radius: 6px; background: #f7f9f0; color: #5c714b; font-size: 10px; }
 .sidebar-bottom { display: grid; gap: 22px; margin-top: auto; padding: 40px 3px 0; }
+.sidebar-legal { display: grid; gap: 10px; padding: 0 12px; }
+.sidebar-legal a { color: #62715d; font-size: 11px; }
+.sidebar-legal a:hover, .app-footer a:hover, .auth-legal a:hover { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
 .reference-card { padding: 18px 16px; border: 1px solid #e0e7cf; border-radius: 14px; background: #f5f7eb; }
 .reference-symbol { display: grid; place-items: center; width: 34px; height: 34px; margin-bottom: 14px; border-radius: 10px; background: #e8efcf; color: #537330; }
 .reference-card strong { color: #385331; font-size: 13px; font-weight: 650; }
@@ -67,6 +70,8 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
 .reference-card a:hover { text-decoration: underline; }
 .sidebar-footer { display: flex; justify-content: center; align-items: center; gap: 7px; color: #636e5c; font-size: 10px; }
 .main-area { flex: 1; min-width: 0; outline: none; }
+.app-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 24px; margin: 36px 40px 0; padding: 22px 0 30px; border-top: 1px solid var(--line); color: #65725f; font-size: 11px; }
+.app-footer nav { display: flex; flex-wrap: wrap; gap: 12px 20px; }
 .topbar { display: flex; align-items: center; justify-content: space-between; height: 76px; padding: 0 40px; border-bottom: 1px solid var(--line); background: #fffefbc9; }
 .breadcrumb { display: flex; align-items: center; gap: 12px; color: #656e61; font-size: 12px; }
 .breadcrumb strong { color: #506049; font-weight: 500; }
@@ -208,10 +213,16 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
 .auth-brand { width: 164px; margin-bottom: 6px; }
 .auth-modal [data-slot="dialog-title"] { margin: 0; color: var(--ink); font: 400 28px var(--font-heading); }
 .auth-modal [data-slot="dialog-description"] { margin: 0; color: var(--text-muted); font-size: 12px; line-height: 1.7; }
+.google-button { display: flex; width: 100%; min-height: 44px; align-items: center; justify-content: center; gap: 11px; border: 1px solid #d6dfcb; border-radius: 8px; background: #fff; color: var(--ink); font-size: 12px; font-weight: 600; box-shadow: 0 1px 3px #2536210c; }
+.google-button:hover { background: #f8faf5; border-color: #bdcbb3; }
+.auth-divider { display: flex; align-items: center; gap: 12px; color: #839079; font-size: 11px; white-space: nowrap; }
+.auth-divider::before, .auth-divider::after { content: ""; height: 1px; flex: 1; background: #e3e9dc; }
 .auth-modal form { display: grid; gap: 17px; }
 .auth-modal form button { width: 100%; }
 .auth-links { margin-top: 0; }
 .auth-links button { color: #597342; }
+.auth-legal { margin: 0; padding-top: 13px; border-top: 1px solid var(--line); color: #65725f; font-size: 11px; line-height: 1.6; text-align: center; }
+.auth-legal a { color: #345c3a; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
 
 /* Shared panels use the same surfaces, labels, and controls as the studio. */
 .settings-card, .workspace-editor, .workspace-item, .term-card { border-color: var(--line); background: #fffefb; box-shadow: 0 3px 12px #273b2303; }
@@ -294,6 +305,7 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
 }
 @media (max-width: 760px) {
   .sidebar { display: none; }
+  .app-footer { margin-inline: 20px; }
   .topbar { height: 72px; padding-inline: 20px; background: #fffefb; }
   .breadcrumb { display: none; }
   .mobile-brand { display: block; padding: 0; border: 0; background: none; }
@@ -327,6 +339,7 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
 }
 @media (max-width: 520px) {
   .topbar { padding-inline: 17px; }
+  .app-footer { margin-inline: 17px; }
   .content { padding-inline: 17px; }
   .generator-switch { padding-inline: 17px; }
   .generator-switch p, .workspace-heading p { font-size: 12px; }
@@ -371,6 +384,7 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
 }
 @media print {
   body { background: #fff; }
+  .app-footer { display: none !important; }
   .skip-link, .sidebar, .topbar, .mobile-nav, .hero, .curriculum, .generator-switch, .section-heading, .editor-column, .preview-heading, .save-panel, .empty-preview, .library-content, [data-slot="dialog-overlay"], [data-slot="dialog-content"] { display: none !important; }
   .app-shell, .main-area, .content, .builder, .builder-grid, .preview-column, .preview-sticky { display: block !important; width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
   .main-area > .workspace-content, .main-area > .settings-content, .main-area > .term-content, .main-area > .library-content { display: none !important; }
