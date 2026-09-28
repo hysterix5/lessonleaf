@@ -148,7 +148,7 @@
 .course-week-top button { color: #a3b2a9; padding: 4px; height: 25px; }
 .course-week-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 11px; }
 .course-week-fields .field input { background: #fff; }
-.course-actions { justify-content: space-between; flex-wrap: wrap; border-top: 1px solid #e8eee9; padding-top: 20px; }
+.course-actions { flex-wrap: wrap; border-top: 1px solid #e8eee9; padding-top: 20px; }
 .course-actions button { font-size: 11px; }
 .term-content { padding-top: 24px; }
 .term-card { display: block; padding: 0; border: 1px solid #dce8e3; border-radius: 17px; overflow: hidden; background: #fff; box-shadow: 0 13px 36px #254a3b0b; }
@@ -158,7 +158,7 @@
 .term-form-grid { display: grid; gap: 15px; }
 .term-form-grid.top-row { grid-template-columns: 1.3fr .9fr 1fr; }
 .term-form-grid.schedule-row { grid-template-columns: 1.25fr repeat(3,.8fr) 1.25fr; }
-.term-form-grid.source-row { grid-template-columns: 1fr 1.75fr; }
+.term-form-grid.source-row { grid-template-columns: 1fr; }
 .term-form-grid.defaults-row { grid-template-columns: repeat(2,1fr); }
 .term-form .field input { background: #fff; height: 41px; border-color: #d6e1df; }
 .term-form .field small { color: #83988d; line-height: 1.4; }

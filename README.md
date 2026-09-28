@@ -31,9 +31,9 @@ Open [http://localhost:3000](http://localhost:3000). You can create and edit a s
 1. **Sign in or create an account** with an email and password. You can try a single plan before signing in, but saving and term generation require an account.
 2. **Set your defaults** in **Settings**: school and teacher details, school year, duration, a school logo, and common lesson fields. Select **Save settings**. Logo upload requires sign-in.
 3. **Add a class** in **Classes** with its subject, grade, meeting days, and lesson duration. Skip this if you only need a manual single plan.
-4. **Create a course overview** in **Course** for that class. Give every scheduled week a numbered topic, or load the eight-week Science sequence for a Science class.
+4. **Create a course overview** in **Course** for that class. Give every scheduled week a numbered topic.
 5. **Create one lesson** under **Generate plans → Single Plan**: enter the lesson details, choose **Smart Template** or **AI draft**, create the draft, edit its sections, then select **Save draft** or **Mark ready**. AI mode requires sign-in.
-6. **Create a full term** under **Generate plans → Term Schedule**: choose the class, start date, number of weeks, meeting days, content source, and generation mode. Review the plan count, then generate the drafts. AI mode supports up to eight meetings per batch; Smart Template supports the full schedule range.
+6. **Create a full term** under **Generate plans → Term Schedule**: choose the class, saved course overview, start date, number of weeks, meeting days, and generation mode. Review the plan count, then generate the drafts. AI mode supports up to 12 meetings per batch; Smart Template supports the full schedule range.
 7. **Revisit and print** plans from **My lesson plans**. Saved plans are grouped by course, with plans that have no course under **Other plans**. Open a plan to edit it, or choose a layout and select **Print all** on a course to print its complete set of lessons as one document. For one lesson, open it and use the printer icon in **Lesson preview**. Your browser can save either printout as a PDF.
 
 For each screen and the available options, open **Guide** in the app's navigation or read the [step-by-step user guide](docs/USER_GUIDE.md).

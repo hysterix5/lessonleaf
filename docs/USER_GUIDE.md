@@ -35,37 +35,36 @@ Deleting a class also deletes its course overviews, so check the class before co
 
 ## 4. Add a course overview
 
-A term schedule needs weekly content for every week you plan to generate. You can use a saved course overview for any class, or use the built-in eight-week Science sequence for a Science class.
+A term schedule needs a saved course overview with content for every week you plan to generate.
 
 1. Open **Course** and choose the class at the top.
 2. Select **New overview** if an existing overview is open. Enter an **Overview title** and, optionally, a **Course summary**.
 3. For each week, enter a unique **Week no.** and a **Topic**. Add the unit, key focus, activity, and presentation goal to give the generated drafts more useful detail.
-4. Select **Add week** until the overview covers the weeks you intend to schedule. For a Science curriculum, **Load sample Science sequence** fills in the eight topics from the sample PDF; you can edit them before saving.
+4. Select **Add week** until the overview covers the weeks you intend to schedule.
 5. Select **Create overview**, or **Save overview** when editing an existing one.
 
-The overview belongs to the selected class. A term batch cannot be generated if any requested week is missing from its content source.
+The overview belongs to the selected class. A term batch cannot be generated if any requested week is missing from it.
 
 ## 5. Create one lesson plan
 
 1. Open **Generate plans** and select **Single Plan**.
-2. Optionally choose a week from **Explore the sample sequence** to fill in a Grade 1 Science topic. You can also type your own lesson details.
-3. Under **Lesson details**, optionally choose a saved **Class** and **Course overview**, then select a **Course week**. A class fills its subject, grade, section, school year, and duration; a course week fills its topic and unit. Type any **Lesson category**, such as Regular, Midterm, or Skills Review.
-4. Review the subject, grade, school year, week, date, lesson topic, duration, and any optional chapter, resource, pages, or teacher name. Fields marked **\*** are required; the date and other unmarked fields may be left blank. Enter a lesson topic if one was not filled automatically.
-5. Choose **Generation mode**: **Smart Template** for an immediate structured draft, or **AI draft** for a lesson written around your topic and course guidance. AI drafting requires sign-in and a server-side Groq key. Select **Create lesson draft** or **Create AI lesson draft**. The draft appears in **Lesson preview**.
-6. Edit the plan under **Shape the content**. Work through **Goals & resources**, **Teaching flow**, and **Assessment & more**; the preview updates as you edit.
-7. Select **Save draft** to keep working later or **Mark ready** when the lesson is ready to teach. These actions save the plan to your account.
+2. Under **Lesson details**, optionally choose a saved **Class** and **Course overview**, then select a **Course week**. A class fills its subject, grade, section, school year, and duration; a course week fills its topic and unit. You can also type your own lesson details. Type any **Lesson category**, such as Regular, Midterm, or Skills Review.
+3. Review the subject, grade, school year, week, date, lesson topic, duration, and any optional chapter, resource, pages, or teacher name. Fields marked **\*** are required; the date and other unmarked fields may be left blank. Enter a lesson topic if one was not filled automatically.
+4. Choose **Generation mode**: **Smart Template** for an immediate structured draft, or **AI draft** for a lesson written around your topic and course guidance. AI drafting requires sign-in and a server-side Groq key. Select **Create lesson draft** or **Create AI lesson draft**. The draft appears in **Lesson preview**.
+5. Edit the plan under **Shape the content**. Work through **Goals & resources**, **Teaching flow**, and **Assessment & more**; the preview updates as you edit.
+6. Select **Save draft** to keep working later or **Mark ready** when the lesson is ready to teach. These actions save the plan to your account.
 
 Creating a fresh draft replaces the current working draft in the editor. Save any changes you want to keep first. An unsaved working draft is retained in the same browser, but it does not appear in **My lesson plans** until you save it to your account.
 
 ## 6. Generate a term schedule
 
-1. Sign in, create a class, and prepare a course overview as described above, unless you will use the built-in Science sequence.
+1. Sign in, create a class, and prepare a course overview as described above.
 2. Open **Generate plans** and select **Term Schedule**.
 3. Choose the **Class**, type any **Lesson category** (for example, Midterm or Project), and set the **Term start date**. Fields marked **\*** are required. The school year, duration, and class meeting days start with the class defaults; adjust them for this batch if needed.
 4. Set **Number of weeks** and **Starting week no.**. You can generate 1–24 weeks at a time, within course weeks 1–52.
-5. Under **Lesson content source**, choose **Saved course overview** and select an overview for this class. For a Science class, you may choose **Sample Science sequence** instead; it covers weeks 1–8.
+5. Select a saved **Course overview** for this class.
 6. Optionally enter a default chapter and unit. Review the summary showing the number of plans and the first and last class dates. Each selected meeting day creates one plan per week, starting on or after the term start date.
-7. Choose **Generation mode**. **Smart Template** supports the full schedule range. **AI draft** writes content for up to eight class meetings in one batch; reduce the weeks or meeting days if the count is higher. If a missing-week message appears, add those weeks in **Course** or adjust the range. When the schedule looks right, generate the drafts.
+7. Choose **Generation mode**. **Smart Template** supports the full schedule range. **AI draft** writes content for up to 12 class meetings in one batch; reduce the weeks or meeting days if the count is higher. If a missing-week message appears, add those weeks in **Course** or adjust the range. When the schedule looks right, generate the drafts.
 
 The new drafts appear in **My lesson plans**. Each meeting gets its own editable plan with the selected category, date, and weekly topic. In AI mode, all content is generated before saving the batch; if AI generation fails, no drafts from that attempt are saved. Review AI output before teaching.
 
@@ -79,4 +78,4 @@ The new drafts appear in **My lesson plans**. Each meeting gets its own editable
 6. To print a whole course, choose **Normal layout** or **Styled layout** in **My lesson plans**, then select **Print all** beside that course. The print dialog contains every saved lesson in the course in date order, with each lesson starting on a new page. Choose **Save as PDF** to make one PDF for the course. Search only changes which cards you see; **Print all** still includes the full course.
 7. Select **New lesson plan** to start another plan. To remove a saved plan, select its delete icon in the library and then **Confirm delete**.
 
-The sample PDF is a reference for the built-in format and Science topics; the app does not read new PDFs. If your saved items do not appear, check that you are signed in to the same account and that the Supabase tables in the [README setup](../README.md#setup) have been created. If AI reports that it is not configured, add `GROQ_API_KEY` to the app's `.env` and restart the server.
+The sample PDF is a reference for the printable format; the app does not read new PDFs. If your saved items do not appear, check that you are signed in to the same account and that the Supabase tables in the [README setup](../README.md#setup) have been created. If AI reports that it is not configured, add `GROQ_API_KEY` to the app's `.env` and restart the server.

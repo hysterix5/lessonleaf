@@ -38,7 +38,7 @@ test("two meeting days produce two editable lessons per week with course guidanc
   const plans = buildTermPlans({
     classRecord, category: "Skills Review", schoolYear: "2026–2027", termStart: "2026-09-24",
     numberOfWeeks: 2, startingWeek: 1, duration: 45, meetingDays: [2, 4],
-    contentSource: "course", overview, chapter: "Living things", unit: "Unit 3", resource: "Science textbook, 2nd edition",
+    overview, chapter: "Living things", unit: "Unit 3", resource: "Science textbook, 2nd edition",
   }, settings);
   assert.equal(plans.length, 4);
   assert.deepEqual(plans.map((plan) => plan.week), [1, 1, 2, 2]);
@@ -55,15 +55,15 @@ test("a course batch stops when a requested week has no content", () => {
   assert.throws(() => buildTermPlans({
     classRecord, category: "Midterm", schoolYear: "2026–2027", termStart: "2026-09-24",
     numberOfWeeks: 2, startingWeek: 1, duration: 60, meetingDays: [2],
-    contentSource: "course", overview: { id: "96c8d58e-bf4d-411c-91ef-85cc23d6c665", classId: classRecord.id, weeks: [{ week: 1, topic: "Habitats", unit: "", focus: "", activity: "", presentationGoal: "" }] },
+    overview: { id: "96c8d58e-bf4d-411c-91ef-85cc23d6c665", classId: classRecord.id, weeks: [{ week: 1, topic: "Habitats", unit: "", focus: "", activity: "", presentationGoal: "" }] },
     chapter: "", unit: "", resource: "",
   }, settings), /week 2/);
 });
 
-test("the sample Science sequence cannot be used for a different subject", () => {
+test("a course overview from another class cannot be used", () => {
   assert.throws(() => buildTermPlans({
-    classRecord: { ...classRecord, subject: "English" }, category: "Weekly", schoolYear: "2026–2027",
+    classRecord, category: "Weekly", schoolYear: "2026–2027",
     termStart: "2026-09-24", numberOfWeeks: 1, startingWeek: 1, duration: 60,
-    meetingDays: [2], contentSource: "sample", chapter: "", unit: "", resource: "",
-  }, settings), /Science classes/);
+    meetingDays: [2], overview: { id: "96c8d58e-bf4d-411c-91ef-85cc23d6c665", classId: "another-class", weeks: [{ week: 1, topic: "Habitats" }] }, chapter: "", unit: "", resource: "",
+  }, settings), /saved course overview/);
 });

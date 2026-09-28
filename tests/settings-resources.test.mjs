@@ -23,5 +23,5 @@ test("saved resources keep their order and skip blank or duplicate entries", () 
   const settings = parseSettings({ resources: ["Science book", " science book ", "", "Library guide"] });
   assert.deepEqual(settings.resources, ["Science book", "Library guide"]);
   assert.deepEqual(parseSettings({ resources: [], resource: "Old textbook" }).resources, []);
-  assert.deepEqual(validateSettings({ ...defaultSettings, resources: ["  Custom reference  "] }).resources, ["Custom reference"]);
+  assert.deepEqual(validateSettings({ ...defaultSettings, schoolYear: "2026–2027", subject: "Science", grade: "Grade 1", resources: ["  Custom reference  "] }).resources, ["Custom reference"]);
 });
