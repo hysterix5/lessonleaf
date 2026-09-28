@@ -40,6 +40,12 @@ const fallbackCooldownMs = 30_000;
 const modelCooldowns = new Map<(typeof models)[number], number>();
 let nextModelIndex = 0;
 
+export class AiRateLimitError extends Error {
+  constructor(readonly retryAfterMs: number, readonly completedLessons: AiLessonContent[] = []) {
+    super("AI generation is at capacity. Please try again later.");
+  }
+}
+
 function retryAfterMs(response: Response): number {
   const seconds = Number(response.headers.get("retry-after"));
   return Number.isFinite(seconds) && seconds > 0 ? Math.min(seconds * 1000, 86_400_000) : fallbackCooldownMs;
@@ -104,7 +110,9 @@ async function generateChunk(requests: AiLessonRequest[], apiKey: string): Promi
     return parseAiLessonBatch(content, requests.length);
   }
 
-  throw new Error("AI generation is at capacity. Please try again later.");
+  const now = Date.now();
+  const nextAvailableAt = Math.min(...models.map((model) => modelCooldowns.get(model) ?? now));
+  throw new AiRateLimitError(Math.max(1_000, nextAvailableAt - now));
 }
 
 export async function generateAiContent(requests: AiLessonRequest[]): Promise<AiLessonContent[]> {
@@ -114,16 +122,23 @@ export async function generateAiContent(requests: AiLessonRequest[]): Promise<Ai
   const lessons: AiLessonContent[] = [];
   let chunk: AiLessonRequest[] = [];
   let chunkChars = 0;
+  const appendChunk = async () => {
+    try { lessons.push(...await generateChunk(chunk, apiKey)); }
+    catch (error) {
+      if (error instanceof AiRateLimitError) throw new AiRateLimitError(error.retryAfterMs, lessons);
+      throw error;
+    }
+  };
   for (const request of requests) {
     const requestChars = JSON.stringify(request).length;
     if (chunk.length && (chunk.length === maxLessonsPerCall || chunkChars + requestChars > maxInputCharsPerCall)) {
-      lessons.push(...await generateChunk(chunk, apiKey));
+      await appendChunk();
       chunk = [];
       chunkChars = 0;
     }
     chunk.push(request);
     chunkChars += requestChars;
   }
-  if (chunk.length) lessons.push(...await generateChunk(chunk, apiKey));
+  if (chunk.length) await appendChunk();
   return lessons;
 }

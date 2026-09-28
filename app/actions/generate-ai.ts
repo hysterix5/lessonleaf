@@ -1,12 +1,11 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
-import { generateAiContent } from "@/lib/ai-generation";
-import { maxAiTermPlans, parseAiLessonRequest, type AiLessonContent, type AiLessonRequest } from "@/lib/ai-content";
+import { AiRateLimitError, generateAiContent } from "@/lib/ai-generation";
+import { maxAiTermPlans, parseAiLessonRequest, type AiLessonRequest } from "@/lib/ai-content";
+import type { AiDraftResult } from "@/lib/ai-retry";
 
-type AiResult = { ok: true; lessons: AiLessonContent[] } | { ok: false; error: string };
-
-export async function generateAiLessonDrafts(accessToken: string, requests: AiLessonRequest[]): Promise<AiResult> {
+export async function generateAiLessonDrafts(accessToken: string, requests: AiLessonRequest[]): Promise<AiDraftResult> {
   if (typeof accessToken !== "string" || !accessToken || accessToken.length > 4096) {
     return { ok: false, error: "Sign in to use AI generation." };
   }
@@ -27,6 +26,9 @@ export async function generateAiLessonDrafts(accessToken: string, requests: AiLe
     const validated = requests.map(parseAiLessonRequest);
     return { ok: true, lessons: await generateAiContent(validated) };
   } catch (error) {
+    if (error instanceof AiRateLimitError) {
+      return { ok: false, error: error.message, retryAfterMs: error.retryAfterMs, lessons: error.completedLessons };
+    }
     return { ok: false, error: error instanceof Error ? error.message : "AI generation failed. Please try again." };
   }
 }

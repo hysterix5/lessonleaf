@@ -118,6 +118,28 @@ test("a rate-limited model falls back and is skipped until its retry period ends
   assert.deepEqual(models, ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "openai/gpt-oss-20b", "openai/gpt-oss-20b"]);
 }));
 
+test("a rate limit mid-batch returns completed lessons for a later retry", async () => withFakeGroq(async () => {
+  const generateAiContent = loadGeneration();
+  const topics = Array.from({ length: 8 }, (_, index) => `Topic ${index + 1}`);
+  let calls = 0;
+  globalThis.fetch = async (_url, options) => {
+    calls += 1;
+    if (calls > 1) return new Response(null, { status: 429, headers: { "retry-after": "2" } });
+    const body = JSON.parse(options.body);
+    const chunk = JSON.parse(body.messages[0].content.split("\n\n").at(-1));
+    return successfulResponse(chunk.map((item) => item.details.topic));
+  };
+  await assert.rejects(
+    generateAiContent(topics.map((topic) => ({ details: { topic }, guidance: {} }))),
+    (error) => {
+      assert.deepEqual(error.completedLessons.map((item) => item.keyFocus), topics.slice(0, 4));
+      assert.ok(error.retryAfterMs > 0 && error.retryAfterMs <= 2_000);
+      return true;
+    },
+  );
+  assert.equal(calls, 3);
+}));
+
 test("when both models are rate-limited, generation returns a clear retry message", async () => withFakeGroq(async () => {
   const generateAiContent = loadGeneration();
   globalThis.fetch = async () => new Response(null, { status: 429 });

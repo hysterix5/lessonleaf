@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { Session } from "@supabase/supabase-js";
-import { ArrowRight, BookOpen, BookOpenText, CalendarRange, Check, ChevronRight, CircleHelp, Clock3, FileText, LayoutGrid, Leaf, LogOut, Plus, Printer, School, Settings2, Sparkles, Trash2, type LucideIcon } from "lucide-react";
+import { ArrowRight, BookOpen, BookOpenText, CalendarRange, Check, ChevronRight, CircleHelp, Clock3, FileText, LayoutGrid, Leaf, LoaderCircle, LogOut, Plus, Printer, School, Settings2, Sparkles, Trash2, type LucideIcon } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { WorkspaceNav, type WorkspaceView } from "@/components/workspace-nav";
 import { ClassesPanel } from "@/components/classes-panel";
@@ -34,6 +34,7 @@ import { errorMessage } from "@/lib/feedback";
 import { useSchoolLogo } from "@/lib/use-school-logo";
 import { generateAiLessonDrafts } from "@/app/actions/generate-ai";
 import { aiLessonRequest, applyAiLessonContent, maxAiTermPlans } from "@/lib/ai-content";
+import { collectAiLessonDrafts } from "@/lib/ai-retry";
 import type { CoursePlanGroup } from "@/lib/lesson-library";
 
 type View = WorkspaceView;
@@ -92,6 +93,7 @@ export default function Home() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [recovery, setRecovery] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [waitingForAi, setWaitingForAi] = useState(false);
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
   const [builderError, setBuilderError] = useState<string | null>(null);
   const [previewError, setPreviewError] = useState<string | null>(null);
@@ -187,13 +189,18 @@ export default function Home() {
   }
 
   async function enrichWithAi(plans: LessonPlan[]): Promise<LessonPlan[]> {
-    const { data, error } = await getSupabase().auth.getSession();
-    if (error || !data.session) throw new Error("Sign in again to use AI generation.");
-    let result: Awaited<ReturnType<typeof generateAiLessonDrafts>>;
-    try { result = await generateAiLessonDrafts(data.session.access_token, plans.map(aiLessonRequest)); }
-    catch { throw new Error("AI generation was interrupted. Refresh the page and try again."); }
-    if (!result.ok) throw new Error(result.error);
-    return plans.map((item, index) => applyAiLessonContent(item, result.lessons[index]));
+    const requests = plans.map(aiLessonRequest);
+    const lessons = await collectAiLessonDrafts(requests, async (remaining) => {
+      const { data, error } = await getSupabase().auth.getSession();
+      if (error || !data.session) throw new Error("Sign in again to use AI generation.");
+      try { return await generateAiLessonDrafts(data.session.access_token, remaining); }
+      catch { throw new Error("AI generation was interrupted. Refresh the page and try again."); }
+    }, async (waitMs) => {
+      setWaitingForAi(true);
+      try { await new Promise<void>((resolve) => window.setTimeout(resolve, waitMs)); }
+      finally { setWaitingForAi(false); }
+    });
+    return plans.map((item, index) => applyAiLessonContent(item, lessons[index]));
   }
 
   async function generate() {
@@ -405,6 +412,7 @@ export default function Home() {
           <Button type="button" className={view === "term" ? "active" : ""} aria-pressed={view === "term"} onClick={() => setView("term")}><CalendarRange size={15} aria-hidden="true" /> Term Schedule</Button>
         </div>
       </div>}
+      {waitingForAi && <div className="ai-wait-status" role="status" aria-live="polite"><LoaderCircle size={18} className="animate-spin" aria-hidden="true" /><span><strong>AI is busy.</strong> Your lesson drafts will resume automatically. Keep this page open.</span></div>}
       {view === "builder" ? <div className="content">
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-content">
