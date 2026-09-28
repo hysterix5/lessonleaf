@@ -20,20 +20,20 @@ const sections = [
     title: "Information we handle",
     content: <>
       <ul>
-        <li><strong>Account details.</strong> If you register by email, Supabase Auth handles your email address, password authentication, and account identifiers. Lessonleaf does not receive your password in its own server code. If you choose Google sign-in, Google and Supabase Auth process your sign-in; Google may provide your email, name, profile image, and Google account identifier. Lessonleaf uses the resulting Supabase account and session to recognize you.</li>
+        <li><strong>Account details.</strong> If you register by email, Supabase Auth handles your email address, password authentication, and account identifiers. Lessonleaf does not receive your password in its own server code. Lessonleaf uses your Supabase account and session to recognize you.</li>
         <li><strong>Planning content.</strong> You may enter lesson plans, classes, course overviews, school and teacher settings, resource names, dates, and a school logo. Saved content is associated with your account in Supabase. The information in free-text fields depends on what you choose to enter.</li>
         <li><strong>Browser data.</strong> Supabase stores the sign-in session in your browser so you can stay signed in. Lessonleaf also keeps guest settings and an unsaved working draft in browser local storage until you remove them or clear browser data.</li>
         <li><strong>Technical information.</strong> Hosting and service providers may process information such as IP address, browser type, request times, and error or security logs to deliver and protect the service.</li>
       </ul>
-      <p>Lessonleaf does not request access to your Google Drive, Gmail, or Calendar through Google sign-in. The app currently has no advertising tracker or analytics SDK.</p>
+      <p>The app currently has no advertising tracker or analytics SDK.</p>
     </>,
   },
   {
     id: "use",
     title: "How we use information",
     content: <>
-      <p>We use account and planning information to authenticate you; save, retrieve, edit, and print your lessons; maintain your settings and school logo; generate drafts when requested; respond to support and privacy requests; and protect the service from misuse. We use Google sign-in data only for account authentication and identification within Lessonleaf.</p>
-      <p>We do not sell your lesson content or Google account information, and we do not use it for targeted advertising.</p>
+      <p>We use account and planning information to authenticate you; save, retrieve, edit, and print your lessons; maintain your settings and school logo; generate drafts when requested; respond to support and privacy requests; and protect the service from misuse.</p>
+      <p>We do not sell your lesson content or account information, and we do not use it for targeted advertising.</p>
     </>,
   },
   {
@@ -48,7 +48,7 @@ const sections = [
     id: "sharing",
     title: "Who receives information",
     content: <>
-      <p>We use Supabase for account authentication, database storage, and private school-logo storage. We use Google for optional Google sign-in and, when selected or reached through Auto, Gemini AI drafting. We use Groq for AI drafting when selected or reached through Auto. Our hosting provider may process the technical information needed to serve the app. These providers may process data in countries outside the Philippines.</p>
+      <p>We use Supabase for account authentication, database storage, and private school-logo storage. We use Google for Gemini AI drafting when selected or reached through Auto. We use Groq for AI drafting when selected or reached through Auto. Our hosting provider may process the technical information needed to serve the app. These providers may process data in countries outside the Philippines.</p>
       <p>We may also disclose information if required by law or to address fraud, abuse, or security incidents, subject to applicable law.</p>
     </>,
   },
@@ -56,7 +56,7 @@ const sections = [
     id: "storage",
     title: "Storage, security, and retention",
     content: <>
-      <p>Saved plans, classes, course overviews, settings, and uploaded logos are stored with Supabase. The app’s database access rules and private logo storage are designed to limit access to the signed-in account. No internet service can guarantee absolute security, so please use a strong password and protect access to your device and Google account.</p>
+      <p>Saved plans, classes, course overviews, settings, and uploaded logos are stored with Supabase. The app’s database access rules and private logo storage are designed to limit access to the signed-in account. No internet service can guarantee absolute security, so please use a strong password and protect access to your device and email account.</p>
       <p>Guest settings and unsaved drafts remain in your browser until you clear them through the app or your browser. Account information and saved content are kept while your account remains active or until you remove them or request deletion, subject to necessary backups, security records, and legal obligations. Service providers may keep records under their own retention policies.</p>
     </>,
   },

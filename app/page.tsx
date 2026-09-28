@@ -50,6 +50,7 @@ const emptyLesson: GenerateInput = {
   chapter: "", unit: "", resource: "", pages: "", preparedBy: "",
 };
 const workingDraftKey = "lessonleaf-working-draft";
+const googleSignInEnabled = process.env.NEXT_PUBLIC_ENABLE_GOOGLE_SIGN_IN === "true";
 
 function Icon({ name, size = 19 }: { name: string; size?: number }) {
   const icons: Record<string, LucideIcon> = { book: BookOpen, grid: LayoutGrid, file: FileText, settings: Settings2, guide: CircleHelp, calendar: CalendarRange, school: School, course: BookOpenText, spark: Sparkles, arrow: ArrowRight, plus: Plus, check: Check, print: Printer, trash: Trash2, clock: Clock3 };
@@ -503,7 +504,7 @@ export default function Home() {
           <DialogDescription>{authMode === "sign-up" ? "Keep your lesson plans and settings in your account." : authMode === "reset" ? "Enter your email and we’ll send a password reset link." : "Sign in to continue planning."}</DialogDescription>
         </DialogHeader>
         {authError && <ErrorAlert title="Could not continue" message={authError} />}
-        {authMode !== "reset" && <>
+        {googleSignInEnabled && authMode !== "reset" && <>
           <Button type="button" className="google-button" disabled={loading || googleLoading} onClick={signInWithGoogle}>
             <GoogleMark />{googleLoading ? "Connecting to Google…" : "Continue with Google"}
           </Button>

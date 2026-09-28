@@ -20,7 +20,7 @@ const sections = [
     id: "service",
     title: "The service and your account",
     content: <>
-      <p>Lessonleaf helps you create, edit, save, and print lesson plans. Some features require an account; a single Smart Template draft can be tried without signing in. You may sign in with email and password or, if enabled, Google. You are responsible for accurate account information, keeping your credentials secure, and activity under your account. Tell us promptly at <LegalContact /> if you believe your account has been used without permission.</p>
+      <p>Lessonleaf helps you create, edit, save, and print lesson plans. Some features require an account; a single Smart Template draft can be tried without signing in. You can sign in with email and password. You are responsible for accurate account information, keeping your credentials secure, and activity under your account. Tell us promptly at <LegalContact /> if you believe your account has been used without permission.</p>
       <p>We may change, pause, or discontinue features to maintain or improve the service. We will try to give reasonable notice of material changes when practical.</p>
     </>,
   },
@@ -51,7 +51,7 @@ const sections = [
     id: "third-parties",
     title: "Third-party services",
     content: <>
-      <p>Lessonleaf relies on Supabase for authentication and storage, Google for optional sign-in, and Groq or Google Gemini for AI drafting. Your use of those features may also be subject to the providers’ applicable terms. We do not control their availability or policies. Links to external sites are provided for convenience and do not make their content part of Lessonleaf.</p>
+      <p>Lessonleaf relies on Supabase for authentication and storage, and Groq or Google Gemini for AI drafting. Your use of those features may be subject to the providers’ applicable terms. We do not control their availability or policies. Links to external sites are provided for convenience and do not make their content part of Lessonleaf.</p>
     </>,
   },
   {

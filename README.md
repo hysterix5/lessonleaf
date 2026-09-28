@@ -15,9 +15,8 @@ A lesson planning app modeled on `public/Lesson Plan sample.pdf`. The sample is 
    ```
 
    `SUPABASE_SECRET_KEY` is not used by the app. The browser connects directly to Supabase using the publishable key and each signed-in user's session. Add at least one AI key. `GROQ_API_KEY` and `GEMINI_API_KEY` stay on the Next.js server; do not prefix them with `NEXT_PUBLIC_`. Auto balances configured models and switches on rate limits. Selecting a specific model keeps that choice for the whole draft. Restart the development server after changing `.env`.
-3. In Supabase Authentication, keep the Email provider enabled with password sign-in. Set the Site URL and allow the app URL as a redirect URL; for local development, add `http://localhost:3000`. Email confirmation, password reset, and Google sign-in return to this URL. If you previously signed in only with email links, use **Forgot password?** once to set a password.
-4. To enable **Continue with Google**, create an OAuth client of type **Web application** in the [Google Auth Platform](https://console.cloud.google.com/auth/clients). Add each app origin, such as `http://localhost:3000`, under **Authorized JavaScript origins**. Under **Authorized redirect URIs**, add the exact callback URL shown on the Google provider page in Supabase Authentication (normally `https://<project-ref>.supabase.co/auth/v1/callback`). Enter the Google client ID and client secret on that Supabase provider page and enable it. In Google Auth Platform, configure the audience, add test users while the app is in testing, and include the `openid`, email, and profile scopes under **Data Access**. Add every deployed app URL to Supabase Authentication's redirect allow list as well. The Google client secret belongs in Supabase, not this app's `.env`.
-5. From `H:\devs\lesson_plan_generator`, install dependencies and start the development server:
+3. In Supabase Authentication, keep the Email provider enabled with password sign-in. Set the Site URL and allow the app URL as a redirect URL; for local development, add `http://localhost:3000`. Email confirmation and password reset use this URL. If you previously signed in only with email links, use **Forgot password?** once to set a password.
+4. From `H:\devs\lesson_plan_generator`, install dependencies and start the development server:
 
    ```bash
    npm.cmd --prefix lesson-plan-generator install
@@ -26,13 +25,15 @@ A lesson planning app modeled on `public/Lesson Plan sample.pdf`. The sample is 
 
    These commands work in Windows PowerShell. In other shells, use `npm` instead of `npm.cmd`. You can also run both commands inside `lesson-plan-generator` without `--prefix`.
 
-Open [http://localhost:3000](http://localhost:3000). You can create and edit a single draft before signing in. Continue with Google or create an account and sign in with email and password to save plans, classes, course overviews, and settings to Supabase. Browser sessions persist across visits.
+Open [http://localhost:3000](http://localhost:3000). You can create and edit a single draft before signing in. Create an account or sign in with email and password to save plans, classes, course overviews, and settings to Supabase. Browser sessions persist across visits.
+
+Google sign-in is currently hidden. Its implementation remains in `app/page.tsx` for later use. When it is ready for public use, configure a Web application OAuth client in the [Google Auth Platform](https://console.cloud.google.com/auth/clients), add the app origin under **Authorized JavaScript origins**, and add the exact callback URL shown on the Google provider page in Supabase Authentication under **Authorized redirect URIs**. Enter the client ID and secret in the Supabase Google provider settings, configure the Google audience and required scopes, and allow the app URL in Supabase Authentication. Then set `NEXT_PUBLIC_ENABLE_GOOGLE_SIGN_IN=true` in the app environment, update the Privacy Policy and Terms to reflect its availability, and rebuild or restart the app. Keep the Google client secret in Supabase, not in the app's public environment variables.
 
 The public [Privacy Policy](app/privacy/page.tsx) and [Terms and Conditions](app/terms/page.tsx) are available at `/privacy` and `/terms`. The operator name, contact email, and revision date are maintained in [`components/legal-page.tsx`](components/legal-page.tsx). Review the policies when hosting or AI provider settings change.
 
 ## How to use Lessonleaf
 
-1. **Sign in or create an account** with Google or an email and password. You can try a single plan before signing in, but saving and term generation require an account.
+1. **Sign in or create an account** with an email and password. You can try a single plan before signing in, but saving and term generation require an account.
 2. **Set your defaults** in **Settings**: school and teacher details, school year, duration, a school logo, and common lesson fields. Select **Save settings**. Logo upload requires sign-in.
 3. **Add a class** in **Classes** with its subject, grade, meeting days, and lesson duration. Skip this if you only need a manual single plan.
 4. **Create a course overview** in **Course** for that class. Give every scheduled week a numbered topic.
@@ -46,7 +47,7 @@ The term generator checks that every requested week has content before saving al
 
 ## App structure
 
-- `app/page.tsx`: lesson builder, preview, saved-plan library, and Google and password sign-in UI using shadcn components.
+- `app/page.tsx`: lesson builder, preview, saved-plan library, and password sign-in UI using shadcn components. Google sign-in code is retained behind a disabled feature flag.
 - `components/settings-panel.tsx`: school, lesson, and account settings UI.
 - `components/lesson-preview.tsx`: normal and styled printable lesson templates.
 - `components/lesson-library.tsx` and `lib/lesson-library.ts`: course-grouped saved plans, search, and full-course printing.

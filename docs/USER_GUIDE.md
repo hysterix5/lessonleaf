@@ -7,10 +7,9 @@ If you are running Lessonleaf yourself, complete the [README setup](../README.md
 ## 1. Create an account or sign in
 
 1. Select **Sign in** at the top of the app.
-2. Select **Continue with Google** to use your Google account. Choose your account in Google's sign-in screen; Lessonleaf will open again when sign-in is complete.
-3. To register with email, select **Create account**, enter your email and a password of at least eight characters, then select **Create account**. If email confirmation is enabled for your Supabase project, follow the confirmation email before signing in.
-4. If you already have an email and password account, enter them and select **Sign in**.
-5. If you previously used email links or forgot your password, select **Forgot password?**, enter your email, and follow the reset email. After opening its link, set a new password in **Settings → Account & password**.
+2. To register, select **Create account**, enter your email and a password of at least eight characters, then select **Create account**. If email confirmation is enabled for your Supabase project, follow the confirmation email before signing in.
+3. If you already have an account, enter your email and password and select **Sign in**.
+4. If you previously used email links or forgot your password, select **Forgot password?**, enter your email, and follow the reset email. After opening its link, set a new password in **Settings → Account & password**.
 
 You can skip this step to try **Single Plan**. When you select **Save draft** or **Mark ready**, Lessonleaf prompts you to sign in. Classes, course overviews, term schedules, and the saved-plan library require sign-in.
 
