@@ -192,7 +192,7 @@ test("a selected Gemini model sends structured requests and keeps lesson order",
     assert.match(url, /gemini-3\.5-flash-lite:generateContent$/);
     assert.equal(options.headers["x-goog-api-key"], "test-gemini-key");
     const body = JSON.parse(options.body);
-    assert.equal(body.generationConfig.responseFormat.text.mimeType, "application/json");
+    assert.equal(body.generationConfig.responseFormat.text.mimeType, "APPLICATION_JSON");
     assert.equal(body.generationConfig.thinkingConfig.thinkingLevel, "MINIMAL");
     assert.equal(body.generationConfig.maxOutputTokens, 2_200);
     const chunk = JSON.parse(body.contents[0].parts[0].text.split("\n\n").at(-1));

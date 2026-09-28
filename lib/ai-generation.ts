@@ -93,7 +93,7 @@ async function generateChunk(requests: AiLessonRequest[], choice: AiModelChoice)
         body: JSON.stringify(gemini ? {
           contents: [{ role: "user", parts: [{ text: prompt }] }],
           generationConfig: {
-            responseFormat: { text: { mimeType: "application/json", schema: responseSchema } },
+            responseFormat: { text: { mimeType: "APPLICATION_JSON", schema: responseSchema } },
             thinkingConfig: { thinkingLevel: "MINIMAL" },
             maxOutputTokens: 1100 * requests.length,
           },
