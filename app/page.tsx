@@ -17,6 +17,7 @@ import { GuidePanel } from "@/components/guide-panel";
 import { CoursePrintDocument, LessonLibrary } from "@/components/lesson-library";
 import { LessonPreview, type PrintTemplate } from "@/components/lesson-preview";
 import { ResourceSelect } from "@/components/resource-select";
+import { ResourceImagesField } from "@/components/resource-images-field";
 import { SettingsPanel } from "@/components/settings-panel";
 import { SinglePlanSource } from "@/components/single-plan-source";
 import { TermSchedulePanel } from "@/components/term-schedule-panel";
@@ -35,6 +36,7 @@ import { buildTermPlans, type TermScheduleInput } from "@/lib/term-schedule";
 import { defaultSettings, guestSettingsKey, loadUserSettings, readGuestSettings, saveUserSettings, settingsToDetails, validateSettings, type AppSettings } from "@/lib/settings";
 import { errorMessage } from "@/lib/feedback";
 import { useSchoolLogo } from "@/lib/use-school-logo";
+import { maxResourceImages, removeResourceImages, uploadResourceImages, type ResourceImage } from "@/lib/resource-images";
 import { generateAiLessonDrafts } from "@/app/actions/generate-ai";
 import { aiLessonRequest, applyAiLessonContent, maxAiTermPlans, type AiModelChoice } from "@/lib/ai-content";
 import { collectAiLessonDrafts } from "@/lib/ai-retry";
@@ -91,6 +93,7 @@ export default function Home() {
   const [singleGenerationMode, setSingleGenerationMode] = useState<GenerationMode>("template");
   const [singleAiModel, setSingleAiModel] = useState<AiModelChoice>("auto");
   const [plan, setPlan] = useState<LessonPlan | null>(null);
+  const [pendingResourceFiles, setPendingResourceFiles] = useState<File[]>([]);
   const [printTemplate, setPrintTemplate] = useState<PrintTemplate>("normal");
   const [printCourse, setPrintCourse] = useState<CoursePlanGroup | null>(null);
   const [saved, setSaved] = useState<LessonPlan[]>([]);
@@ -260,14 +263,28 @@ export default function Home() {
     if (!plan) return;
     if (!session) { setAuthOpen(true); return; }
     setLoading(true); setPreviewError(null);
+    let uploaded: ResourceImage[] = [];
     try {
-      const nextPlan = { ...plan, category: parseLessonCategory(singleCategory), status };
-      const exists = saved.some((item) => item.id === plan.id);
+      const category = parseLessonCategory(singleCategory);
+      const existing = saved.find((item) => item.id === plan.id);
+      const retained = plan.resourceImages || [];
+      if (retained.length + pendingResourceFiles.length > maxResourceImages) throw new Error(`Choose up to ${maxResourceImages} pictures per lesson.`);
+      if (retained.some((image) => !image.path.startsWith(`${session.user.id}/${plan.id}/`))) throw new Error("These pictures belong to a different account. Remove them before saving.");
+      if (pendingResourceFiles.length) uploaded = await uploadResourceImages(session.user.id, plan.id, pendingResourceFiles);
+      const nextPlan = { ...plan, category, status, resourceImages: [...retained, ...uploaded] };
+      const exists = !!existing;
       const result = exists ? await updatePlan(nextPlan) : await createPlan(nextPlan);
       setPlan(result);
       setSaved((current) => [result, ...current.filter((item) => item.id !== result.id)]);
+      setPendingResourceFiles([]);
       toast.success(status === "ready" ? "Lesson plan saved and marked ready." : "Draft saved successfully.");
-    } catch (error) { setPreviewError(errorMessage(error, "Could not save the plan.")); }
+      const removed = (existing?.resourceImages || []).filter((image) => !retained.some((kept) => kept.path === image.path)).map((image) => image.path);
+      if (removed.length) try { await removeResourceImages(removed); }
+      catch { toast.warning("Plan saved, but a removed picture could not be deleted from storage."); }
+    } catch (error) {
+      if (uploaded.length) await removeResourceImages(uploaded.map((image) => image.path)).catch(() => {});
+      setPreviewError(errorMessage(error, "Could not save the plan."));
+    }
     finally { setLoading(false); }
   }
 
@@ -275,42 +292,46 @@ export default function Home() {
     if (confirmDelete !== id) { setConfirmDelete(id); return; }
     setLoading(true);
     try {
+      const imagePaths = saved.find((item) => item.id === id)?.resourceImages?.map((image) => image.path) || [];
       await deletePlan(id);
       setSaved((current) => current.filter((item) => item.id !== id));
-      if (plan?.id === id) { setPlan(null); localStorage.removeItem(workingDraftKey); }
+      if (plan?.id === id) { setPlan(null); setPendingResourceFiles([]); localStorage.removeItem(workingDraftKey); }
       setConfirmDelete(null); toast.success("Lesson plan deleted.");
+      if (imagePaths.length) try { await removeResourceImages(imagePaths); }
+      catch { toast.warning("Plan deleted, but its pictures could not be removed from storage."); }
     } catch (error) { setErrorNotice(errorMessage(error, "Could not delete the plan.")); }
     finally { setLoading(false); }
   }
 
   function open(savedPlan: LessonPlan) {
     setPlan(savedPlan);
+    setPendingResourceFiles([]);
     setSingleClassId(savedPlan.classId || ""); setSingleCourseId(savedPlan.courseOverviewId || ""); setSingleCategory(savedPlan.category || "Regular");
     setDetails({ subject: savedPlan.subject, grade: savedPlan.grade, section: savedPlan.section, schoolYear: savedPlan.schoolYear, week: savedPlan.week, topic: savedPlan.topic, date: savedPlan.date, duration: savedPlan.duration, chapter: savedPlan.chapter, unit: savedPlan.unit, resource: savedPlan.resource, pages: savedPlan.pages, preparedBy: savedPlan.preparedBy });
     setTab("goals"); setView("builder"); setBuilderError(null); setPreviewError(null);
   }
 
-  function reset() { setPlan(null); localStorage.removeItem(workingDraftKey); setDetails({ ...emptyLesson, ...settingsToDetails(settings) }); setSingleClassId(""); setSingleCourseId(""); setSingleCategory(""); setTab("goals"); setView("builder"); setBuilderError(null); setPreviewError(null); }
+  function reset() { setPlan(null); setPendingResourceFiles([]); localStorage.removeItem(workingDraftKey); setDetails({ ...emptyLesson, ...settingsToDetails(settings) }); setSingleClassId(""); setSingleCourseId(""); setSingleCategory(""); setTab("goals"); setView("builder"); setBuilderError(null); setPreviewError(null); }
 
   function selectSingleClass(id: string) {
     const selected = classes.find((item) => item.id === id);
     setSingleClassId(id); setSingleCourseId("");
     if (selected) setDetails((current) => ({ ...current, subject: selected.subject, grade: selected.grade, section: selected.section, schoolYear: selected.schoolYear, duration: selected.duration }));
-    setPlan(null); localStorage.removeItem(workingDraftKey);
+    setPlan(null); setPendingResourceFiles([]); localStorage.removeItem(workingDraftKey);
   }
 
   function selectSingleCourseWeek(week: number) {
     const chosen = courses.find((item) => item.id === singleCourseId)?.weeks.find((item) => item.week === week);
     if (!chosen) return;
     setDetails((current) => ({ ...current, week, topic: chosen.topic, unit: chosen.unit }));
-    setPlan(null); localStorage.removeItem(workingDraftKey);
+    setPlan(null); setPendingResourceFiles([]); localStorage.removeItem(workingDraftKey);
   }
 
   function selectSingleCourse(id: string) {
     setSingleCourseId(id);
     const firstWeek = courses.find((item) => item.id === id)?.weeks[0];
     if (firstWeek) setDetails((current) => ({ ...current, week: firstWeek.week, topic: firstWeek.topic, unit: firstWeek.unit }));
-    setPlan(null); localStorage.removeItem(workingDraftKey);
+    setPlan(null); setPendingResourceFiles([]); localStorage.removeItem(workingDraftKey);
   }
 
   async function saveSettings(next: AppSettings) {
@@ -420,7 +441,7 @@ export default function Home() {
     try {
       const { error } = await getSupabase().auth.signOut({ scope: "local" });
       if (error) throw error;
-      localStorage.removeItem(workingDraftKey); setSession(null); setSaved([]); setClasses([]); setCourses([]); setPlan(null); setDetails(emptyLesson); setView("builder"); toast.success("You are signed out.");
+      localStorage.removeItem(workingDraftKey); setSession(null); setSaved([]); setClasses([]); setCourses([]); setPlan(null); setPendingResourceFiles([]); setDetails(emptyLesson); setView("builder"); toast.success("You are signed out.");
     } catch (error) { setErrorNotice(errorMessage(error, "Could not sign out. Please try again.")); }
   }
 
@@ -481,7 +502,7 @@ export default function Home() {
             <span className="hero-art-caption">GOOD IDEAS START HERE</span>
           </div>
         </section>
-        <section className="builder" id="builder"><div className="section-heading"><div><span className="kicker">MAKE IT YOURS</span><h2>Build your lesson</h2><p>Fill in the basics, create a structured draft, then refine it section by section.</p></div><Badge className="format-pill"><Icon name="spark" size={15} /> Based on the sample format</Badge></div><div className="builder-grid"><div className="editor-column"><Card className="card"><div className="card-heading"><span className="step">01</span><div><h3>Lesson details</h3><p>The starting point for your plan</p></div></div><p className="required-hint"><b className="required-mark">*</b> Required fields</p><SinglePlanSource classes={classes} courses={courses} classId={singleClassId} courseId={singleCourseId} category={singleCategory} week={details.week} onClassChange={selectSingleClass} onCourseChange={selectSingleCourse} onCategoryChange={(value) => { setSingleCategory(value); setPlan((current) => current ? { ...current, category: value } : null); }} onCourseWeekChange={selectSingleCourseWeek} /><div className="form-grid"><Field label="Subject" required placeholder="e.g. Science" value={details.subject} onChange={(v) => changeDetail("subject", v)} /><Field label="Grade level" required placeholder="e.g. Grade 1" value={details.grade} onChange={(v) => changeDetail("grade", v)} /><Field label="Section" value={details.section} onChange={(v) => changeDetail("section", v)} placeholder="e.g. A" /><Field label="School year" required placeholder="e.g. 2026–2027" value={details.schoolYear} onChange={(v) => changeDetail("schoolYear", v)} /><Field label="Week" type="number" min={1} max={52} required value={details.week} onChange={(v) => changeDetail("week", Number(v))} /><Field label="Date" type="date" value={details.date} onChange={(v) => changeDetail("date", v)} /><div className="span-2"><Field label="Lesson topic" required value={details.topic} onChange={(v) => changeDetail("topic", v)} placeholder="What will your class explore?" /></div><Field label="Duration (minutes)" type="number" min={10} max={240} required placeholder="e.g. 60" value={details.duration} onChange={(v) => changeDetail("duration", Number(v))} /><Field label="Unit" value={details.unit} onChange={(v) => changeDetail("unit", v)} /><div className="span-2"><Field label="Chapter" value={details.chapter} onChange={(v) => changeDetail("chapter", v)} /></div><div className="span-2"><ResourceSelect key={plan?.id || "new"} resources={settings.resources} value={details.resource} onChange={(value) => changeDetail("resource", value)} /></div><Field label="Pages" value={details.pages} onChange={(v) => changeDetail("pages", v)} placeholder="e.g. 71–85" /><Field label="Prepared by" value={details.preparedBy} onChange={(v) => changeDetail("preparedBy", v)} placeholder="Teacher name" /></div><GenerationModeSelect value={singleGenerationMode} disabled={loading} onChange={(value) => { setSingleGenerationMode(value); setBuilderError(null); }} />{singleGenerationMode === "ai" && <AiModelSelect value={singleAiModel} onChange={(value) => { setSingleAiModel(value); setBuilderError(null); }} disabled={loading} />}<Button type="button" className="primary-button generate-button" disabled={loading} onClick={generate}><Icon name="spark" size={17} /> {loading ? "Writing with AI…" : singleGenerationMode === "ai" ? plan ? "Create a fresh AI draft" : "Create AI lesson draft" : plan ? "Create a fresh draft" : "Create lesson draft"} <Icon name="arrow" size={17} /></Button>{builderError && <ErrorAlert title="Could not create draft" message={builderError} className="form-error" />}<p className="helper">{singleGenerationMode === "ai" ? "AI drafts are editable. Review the content before saving or teaching." : "The draft uses a structured template. You can edit every section."}</p></Card>
+        <section className="builder" id="builder"><div className="section-heading"><div><span className="kicker">MAKE IT YOURS</span><h2>Build your lesson</h2><p>Fill in the basics, create a structured draft, then refine it section by section.</p></div><Badge className="format-pill"><Icon name="spark" size={15} /> Based on the sample format</Badge></div><div className="builder-grid"><div className="editor-column"><Card className="card"><div className="card-heading"><span className="step">01</span><div><h3>Lesson details</h3><p>The starting point for your plan</p></div></div><p className="required-hint"><b className="required-mark">*</b> Required fields</p><SinglePlanSource classes={classes} courses={courses} classId={singleClassId} courseId={singleCourseId} category={singleCategory} week={details.week} onClassChange={selectSingleClass} onCourseChange={selectSingleCourse} onCategoryChange={(value) => { setSingleCategory(value); setPlan((current) => current ? { ...current, category: value } : null); }} onCourseWeekChange={selectSingleCourseWeek} /><div className="form-grid"><Field label="Subject" required placeholder="e.g. Science" value={details.subject} onChange={(v) => changeDetail("subject", v)} /><Field label="Grade level" required placeholder="e.g. Grade 1" value={details.grade} onChange={(v) => changeDetail("grade", v)} /><Field label="Section" value={details.section} onChange={(v) => changeDetail("section", v)} placeholder="e.g. A" /><Field label="School year" required placeholder="e.g. 2026–2027" value={details.schoolYear} onChange={(v) => changeDetail("schoolYear", v)} /><Field label="Week" type="number" min={1} max={52} required value={details.week} onChange={(v) => changeDetail("week", Number(v))} /><Field label="Date" type="date" value={details.date} onChange={(v) => changeDetail("date", v)} /><div className="span-2"><Field label="Lesson topic" required value={details.topic} onChange={(v) => changeDetail("topic", v)} placeholder="What will your class explore?" /></div><Field label="Duration (minutes)" type="number" min={10} max={240} required placeholder="e.g. 60" value={details.duration} onChange={(v) => changeDetail("duration", Number(v))} /><Field label="Unit" value={details.unit} onChange={(v) => changeDetail("unit", v)} /><div className="span-2"><Field label="Chapter" value={details.chapter} onChange={(v) => changeDetail("chapter", v)} /></div><div className="span-2"><ResourceSelect key={plan?.id || "new"} resources={settings.resources} value={details.resource} onChange={(value) => changeDetail("resource", value)} /><ResourceImagesField userId={session?.user.id} images={plan?.resourceImages || []} pending={pendingResourceFiles} onAdd={(files) => setPendingResourceFiles((current) => [...current, ...files])} onRemoveSaved={(path) => setPlan((current) => current ? { ...current, resourceImages: (current.resourceImages || []).filter((image) => image.path !== path) } : null)} onRemovePending={(index) => setPendingResourceFiles((current) => current.filter((_, position) => position !== index))} disabled={loading} /></div><Field label="Pages" value={details.pages} onChange={(v) => changeDetail("pages", v)} placeholder="e.g. 71–85" /><Field label="Prepared by" value={details.preparedBy} onChange={(v) => changeDetail("preparedBy", v)} placeholder="Teacher name" /></div><GenerationModeSelect value={singleGenerationMode} disabled={loading} onChange={(value) => { setSingleGenerationMode(value); setBuilderError(null); }} />{singleGenerationMode === "ai" && <AiModelSelect value={singleAiModel} onChange={(value) => { setSingleAiModel(value); setBuilderError(null); }} disabled={loading} />}<Button type="button" className="primary-button generate-button" disabled={loading} onClick={generate}><Icon name="spark" size={17} /> {loading ? "Writing with AI…" : singleGenerationMode === "ai" ? plan ? "Create a fresh AI draft" : "Create AI lesson draft" : plan ? "Create a fresh draft" : "Create lesson draft"} <Icon name="arrow" size={17} /></Button>{builderError && <ErrorAlert title="Could not create draft" message={builderError} className="form-error" />}<p className="helper">{singleGenerationMode === "ai" ? "AI drafts are editable. Review the content before saving or teaching." : "The draft uses a structured template. You can edit every section."}</p></Card>
           {plan && <Card className="card edit-card"><div className="card-heading"><span className="step">02</span><div><h3>Shape the content</h3><p>Review the teaching details</p></div></div><Tabs value={tab} onValueChange={(value) => setTab(value as Tab)}><TabsList className="editor-tabs" aria-label="Lesson sections"><TabsTrigger value="goals">Goals & resources</TabsTrigger><TabsTrigger value="flow">Teaching flow</TabsTrigger><TabsTrigger value="finish">Assessment & more</TabsTrigger></TabsList></Tabs><div className="editor-fields">{tab === "goals" && <><Area label="Core goal" value={plan.coreGoal} onChange={(v) => update("coreGoal", v)} /><Area label="Key focus" value={plan.keyFocus} onChange={(v) => update("keyFocus", v)} /><ListArea key={plan.id + "-objectives"} label="Learning objectives" items={plan.objectives} onChange={(v) => update("objectives", v)} rows={5} hint="One objective per line" /><ListArea key={plan.id + "-vocabulary"} label="Target vocabulary" items={plan.vocabulary} onChange={(v) => update("vocabulary", v)} hint="One word or phrase per line" /><Area label="Language focus" value={plan.languageFocus} onChange={(v) => update("languageFocus", v)} /><ListArea key={plan.id + "-materials"} label="Materials & resources" items={plan.materials} onChange={(v) => update("materials", v)} rows={4} hint="One material per line" /></>}{tab === "flow" && <><Area label="Warm-up" value={plan.warmUp} onChange={(v) => update("warmUp", v)} rows={4} /><Area label="Lesson procedure" value={plan.lessonProcedure} onChange={(v) => update("lessonProcedure", v)} rows={9} /><Area label="Teacher actions" value={plan.teacherActions} onChange={(v) => update("teacherActions", v)} /><Area label="Student actions" value={plan.studentActions} onChange={(v) => update("studentActions", v)} /><Area label="Activity / project" value={plan.activity} onChange={(v) => update("activity", v)} /><Area label="Presentation / discussion" value={plan.presentation} onChange={(v) => update("presentation", v)} /></>}{tab === "finish" && <><Area label="Assessment / wrap-up" value={plan.assessment} onChange={(v) => update("assessment", v)} /><Area label="Homework" value={plan.homework} onChange={(v) => update("homework", v)} /><ListArea key={plan.id + "-links"} label="Multimedia links" items={plan.multimediaLinks} onChange={(v) => update("multimediaLinks", v)} hint="One link per line" /><Area label="Notes" value={plan.notes} onChange={(v) => update("notes", v)} /></>}</div></Card>}</div>
           <div className="preview-column"><div className="preview-sticky"><div className="preview-heading"><div><span className="kicker">THE FINISHED VIEW</span><h3>Lesson preview</h3></div>{plan && <Button type="button" className="print-button" onClick={() => window.print()} aria-label="Print or save lesson plan as PDF" title="Print or save as PDF"><Icon name="print" /></Button>}</div>
             {plan && <div className="template-selector"><span>Print template</span><div role="group" aria-label="Print template"><Button type="button" className={`template-option ${printTemplate === "normal" ? "selected" : ""}`} aria-pressed={printTemplate === "normal"} onClick={() => setPrintTemplate("normal")}>Normal layout</Button><Button type="button" className={`template-option ${printTemplate === "styled" ? "selected" : ""}`} aria-pressed={printTemplate === "styled"} onClick={() => setPrintTemplate("styled")}>Styled layout</Button></div></div>}

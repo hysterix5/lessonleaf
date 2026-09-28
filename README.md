@@ -4,7 +4,7 @@ A lesson planning app modeled on `public/Lesson Plan sample.pdf`. The sample is 
 
 ## Setup
 
-1. In your Supabase project's SQL Editor, run the migrations in `supabase/migrations` in date order. For an existing installation, apply [`20260928_create_ai_usage.sql`](supabase/migrations/20260928_create_ai_usage.sql) to enable private API usage records and the developer dashboard.
+1. In your Supabase project's SQL Editor, run the migrations in `supabase/migrations` in date order. For an existing installation, apply any newer migrations you have not run, including [`20260928_create_resource_images.sql`](supabase/migrations/20260928_create_resource_images.sql) for private resource-picture uploads.
 2. Set these variables in this app directory's `.env` file:
 
    ```env
@@ -43,7 +43,7 @@ The public [Privacy Policy](app/privacy/page.tsx) and [Terms and Conditions](app
 2. **Set your defaults** in **Settings**: school and teacher details, school year, duration, a school logo, and common lesson fields. Select **Save settings**. Logo upload requires sign-in.
 3. **Add a class** in **Classes** with its subject, grade, meeting days, and lesson duration. Skip this if you only need a manual single plan.
 4. **Create a course overview** in **Course** for that class. Give every scheduled week a numbered topic.
-5. **Create one lesson** under **Generate plans → Single Plan**: enter the lesson details, choose **Smart Template** or **AI draft**, select an AI model when needed, create the draft, edit its sections, then select **Save draft** or **Mark ready**. AI mode requires sign-in.
+5. **Create one lesson** under **Generate plans → Single Plan**: enter the lesson details, optionally add up to five resource pictures (PNG, JPG, or WebP, 5 MB each), choose **Smart Template** or **AI draft**, select an AI model when needed, create the draft, edit its sections, then select **Save draft** or **Mark ready**. Pictures upload to private Supabase Storage when a signed-in user saves the lesson; they are available when reopening the plan, but are not sent to AI or printed. AI mode requires sign-in.
 6. **Create a full term** under **Generate plans → Term Schedule**: choose the class, saved course overview, start date, number of weeks, meeting days, and generation mode. Review the plan count, then generate the drafts. AI mode supports up to 12 meetings per batch; Smart Template supports the full schedule range.
 7. **Revisit and print** plans from **My lesson plans**. Saved plans are grouped by course, with plans that have no course under **Other plans**. Open a plan to edit it, or choose a layout and select **Print all** on a course to print its complete set of lessons as one document. For one lesson, open it and use the printer icon in **Lesson preview**. Your browser can save either printout as a PDF.
 
@@ -63,6 +63,7 @@ The term generator checks that every requested week has content before saving al
 - `lib/supabase.ts`: browser Supabase client and direct lesson-plan database operations.
 - `lib/settings.ts`: settings model, validation, and direct Supabase persistence.
 - `lib/school-logo.ts` and `lib/use-school-logo.ts`: logo validation and private Storage downloads for settings and print previews.
+- `lib/resource-image-data.ts`, `lib/resource-images.ts`, and `components/resource-images-field.tsx`: resource-picture validation, private Storage operations, and lesson attachment previews.
 - `lib/catalog.ts`: class and course models and direct Supabase CRUD.
 - `lib/term-schedule.ts`: meeting-date calculation and editable batch draft creation.
 - `app/actions/generate-ai.ts`, `lib/ai-generation.ts`, and `lib/ai-content.ts`: authenticated server-side AI generation, Groq and Gemini response validation, and safe merging into editable drafts.

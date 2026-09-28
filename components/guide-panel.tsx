@@ -78,6 +78,7 @@ export function GuidePanel({ signedIn, onNavigate, onSignIn }: {
       <GuideStep number={5} id="single" title="Create one lesson plan" action="Open single plan" onAction={() => onNavigate("builder")} note={<>An unsaved working draft stays in this browser but will not appear in <strong>My lesson plans</strong>. Save changes before choosing <strong>Create a fresh draft</strong>.</>}>
         <li>Open <strong>Generate plans → Single Plan</strong>. Select a saved class and course week, or enter lesson details yourself.</li>
         <li>Check the topic, grade, week, date, duration, and other details. Fields marked <strong>*</strong> are required. Type a lesson category, choose a <strong>Generation mode</strong> and, for AI drafts, an <strong>AI model</strong>. Auto balances available models. AI mode requires sign-in.</li>
+        <li>Under <strong>Resource / textbook</strong>, optionally add up to five PNG, JPG, or WebP pictures of textbook pages or screenshots. They are saved privately with the lesson when you sign in and save it. Pictures are reference only; AI drafting and printouts use the text fields.</li>
         <li>Edit <strong>Goals &amp; resources</strong>, <strong>Teaching flow</strong>, and <strong>Assessment &amp; more</strong>. The preview updates as you work.</li>
         <li>Select <strong>Save draft</strong> to return later, or <strong>Mark ready</strong> when the plan is ready to teach.</li>
       </GuideStep>

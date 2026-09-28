@@ -1,3 +1,5 @@
+import { maxResourceImages, type ResourceImage } from "./resource-image-data";
+
 export type PlanStatus = "draft" | "ready";
 
 export type LessonPlan = {
@@ -14,6 +16,7 @@ export type LessonPlan = {
   chapter: string;
   unit: string;
   resource: string;
+  resourceImages?: ResourceImage[];
   pages: string;
   keyFocus: string;
   activityHighlight: string;
@@ -150,6 +153,12 @@ export function parseLessonPlan(value: unknown): LessonPlan {
   }
   if (typeof data.id !== "string" || !/^[0-9a-f-]{36}$/i.test(data.id)) throw new Error("Invalid plan ID.");
   if (data.status !== "draft" && data.status !== "ready") throw new Error("Invalid plan status.");
+  const resourceImages = data.resourceImages ?? [];
+  if (!Array.isArray(resourceImages) || resourceImages.length > maxResourceImages || !resourceImages.every((image) =>
+    image && typeof image === "object" && typeof image.path === "string" &&
+    /^[0-9a-f-]{36}\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(png|jpg|webp)$/i.test(image.path) &&
+    image.path.split("/")[1] === data.id && typeof image.name === "string" && image.name.length <= 200
+  )) throw new Error(`Choose up to ${maxResourceImages} valid resource pictures.`);
   const now = new Date().toISOString();
   const optionalText = (key: "category" | "className") => typeof data[key] === "string" ? (data[key] as string).trim().slice(0, 200) : undefined;
   const optionalId = (key: "classId" | "courseOverviewId" | "termBatchId") => typeof data[key] === "string" && /^[0-9a-f-]{36}$/i.test(data[key] as string) ? data[key] as string : undefined;
@@ -157,5 +166,6 @@ export function parseLessonPlan(value: unknown): LessonPlan {
     ...plan, ...input, id: data.id, status: data.status, createdAt: now, updatedAt: now,
     category: optionalText("category") || "General", className: optionalText("className"),
     classId: optionalId("classId"), courseOverviewId: optionalId("courseOverviewId"), termBatchId: optionalId("termBatchId"),
+    resourceImages,
   } as LessonPlan;
 }

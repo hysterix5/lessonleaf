@@ -50,11 +50,12 @@ The overview belongs to the selected class. A term batch cannot be generated if 
 1. Open **Generate plans** and select **Single Plan**.
 2. Under **Lesson details**, optionally choose a saved **Class** and **Course overview**, then select a **Course week**. A class fills its subject, grade, section, school year, and duration; a course week fills its topic and unit. You can also type your own lesson details. Type any **Lesson category**, such as Regular, Midterm, or Skills Review.
 3. Review the subject, grade, school year, week, date, lesson topic, duration, and any optional chapter, resource, pages, or teacher name. Fields marked **\*** are required; the date and other unmarked fields may be left blank. Enter a lesson topic if one was not filled automatically.
-4. Choose **Generation mode**: **Smart Template** for an immediate structured draft, or **AI draft** for a lesson written around your topic and course guidance. For AI, choose **Auto** to balance configured models or select GPT-OSS 120B, GPT-OSS 20B, or Gemini 3.5 Flash-Lite. AI drafting requires sign-in and a server-side key for the selected provider. Select **Create lesson draft** or **Create AI lesson draft**. The draft appears in **Lesson preview**.
-5. Edit the plan under **Shape the content**. Work through **Goals & resources**, **Teaching flow**, and **Assessment & more**; the preview updates as you edit.
-6. Select **Save draft** to keep working later or **Mark ready** when the lesson is ready to teach. These actions save the plan to your account.
+4. Optionally select **Add pictures** beneath **Resource / textbook** to attach up to five PNG, JPG, or WebP screenshots or textbook pages, 5 MB each. Selected pictures upload to private Supabase Storage when you sign in and save the lesson. Reopen the saved plan to view or remove them. They are for reference only and are not sent to AI or included in printouts.
+5. Choose **Generation mode**: **Smart Template** for an immediate structured draft, or **AI draft** for a lesson written around your topic and course guidance. For AI, choose **Auto** to balance configured models or select GPT-OSS 120B, GPT-OSS 20B, or Gemini 3.5 Flash-Lite. AI drafting requires sign-in and a server-side key for the selected provider. Select **Create lesson draft** or **Create AI lesson draft**. The draft appears in **Lesson preview**.
+6. Edit the plan under **Shape the content**. Work through **Goals & resources**, **Teaching flow**, and **Assessment & more**; the preview updates as you edit.
+7. Select **Save draft** to keep working later or **Mark ready** when the lesson is ready to teach. These actions save the plan to your account.
 
-Creating a fresh draft replaces the current working draft in the editor. Save any changes you want to keep first. An unsaved working draft is retained in the same browser, but it does not appear in **My lesson plans** until you save it to your account.
+Creating a fresh draft replaces the current working draft in the editor. Save any changes you want to keep first. An unsaved working draft is retained in the same browser, but selected picture files are kept only until the page is refreshed or closed. The draft does not appear in **My lesson plans** until you save it to your account.
 
 ## 6. Generate a term schedule
 
