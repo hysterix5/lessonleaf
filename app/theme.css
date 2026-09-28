@@ -116,7 +116,6 @@
 .dark :is(.reference-card strong, .reference-card a, .workspace-list-empty strong, .empty-preview > div svg, .empty-preview > div span, .term-guidance button) { color: #c6e5b6; }
 .dark :is(.reference-card p, .week-bottom) { color: var(--text-muted); }
 .dark :is(.preview-placeholder-label, .hero-art-caption, .empty-preview > div span) { color: var(--text-muted); }
-.dark .brand-logo-wordmark { filter: brightness(1.75) saturate(.9); }
 .dark .account-avatar { background: #354c37; color: #eaf2e5; }
 .dark :is(.class-stats > div:nth-child(2) .stat-icon, .class-stats > div:nth-child(3) .stat-icon) { background: #334532; color: #c6e5b6; }
 .dark .hero { background: linear-gradient(110deg, #24382a, #1c3027); border-color: #3c5940; }
