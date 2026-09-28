@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CalendarRange, ChevronRight, Sparkles } from "lucide-react";
+import { AiModelSelect } from "@/components/ai-model-select";
 import { ErrorAlert } from "@/components/error-alert";
 import { GenerationModeSelect, type GenerationMode } from "@/components/generation-mode-select";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import { WeekdayPicker, weekdays } from "@/components/weekday-picker";
 import { createTermMeetings, type TermScheduleInput } from "@/lib/term-schedule";
 import { errorMessage } from "@/lib/feedback";
 import { maxAiTermPlans } from "@/lib/ai-content";
+import type { AiModelChoice } from "@/lib/ai-content";
 import type { ClassRecord, CourseOverview } from "@/lib/catalog";
 import type { AppSettings } from "@/lib/settings";
 
@@ -32,7 +34,7 @@ export function TermSchedulePanel({ classes, courses, settings, signedIn, onGene
   courses: CourseOverview[];
   settings: AppSettings;
   signedIn: boolean;
-  onGenerate: (input: TermScheduleInput, mode: GenerationMode) => Promise<void>;
+  onGenerate: (input: TermScheduleInput, mode: GenerationMode, model: AiModelChoice) => Promise<void>;
   onSignIn: () => void;
   onManageClasses: () => void;
   onManageCourse: () => void;
@@ -55,6 +57,7 @@ export function TermSchedulePanel({ classes, courses, settings, signedIn, onGene
   const [resourcePickerRevision, setResourcePickerRevision] = useState(0);
   const [busy, setBusy] = useState(false);
   const [generationMode, setGenerationMode] = useState<GenerationMode>("template");
+  const [aiModel, setAiModel] = useState<AiModelChoice>("auto");
   const [formError, setFormError] = useState<string | null>(null);
   const effectiveDays = meetingDays ?? selectedClass?.meetingDays ?? [];
   const effectiveDuration = duration ?? selectedClass?.duration ?? settings.defaultDuration;
@@ -74,7 +77,7 @@ export function TermSchedulePanel({ classes, courses, settings, signedIn, onGene
   })();
 
   function selectClass(id: string) { setClassId(id); setOverviewId(""); setMeetingDays(null); setDuration(null); setSchoolYear(null); setResource(null); setResourcePickerRevision((current) => current + 1); setFormError(null); }
-  function clear() { setCategory(""); setSchoolYear(null); setTermStart(""); setNumberOfWeeks(8); setStartingWeek(1); setMeetingDays(null); setDuration(null); setChapter(""); setUnit(""); setResource(null); setResourcePickerRevision((current) => current + 1); setOverviewId(""); setGenerationMode("template"); setFormError(null); }
+  function clear() { setCategory(""); setSchoolYear(null); setTermStart(""); setNumberOfWeeks(8); setStartingWeek(1); setMeetingDays(null); setDuration(null); setChapter(""); setUnit(""); setResource(null); setResourcePickerRevision((current) => current + 1); setOverviewId(""); setGenerationMode("template"); setAiModel("auto"); setFormError(null); }
   async function generate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!signedIn) { onSignIn(); return; }
@@ -88,7 +91,7 @@ export function TermSchedulePanel({ classes, courses, settings, signedIn, onGene
         overview,
         chapter: chapter.trim() || settings.chapter, unit: unit.trim() || settings.unit,
         resource: effectiveResource,
-      }, generationMode);
+      }, generationMode, aiModel);
     } catch (error) { setFormError(errorMessage(error, "Could not create term lesson drafts.")); }
     finally { setBusy(false); }
   }
@@ -96,6 +99,7 @@ export function TermSchedulePanel({ classes, courses, settings, signedIn, onGene
   return <div className="content term-content"><Card className="term-card"><div className="term-card-heading"><span className="term-card-icon"><CalendarRange size={21} /></span><div><h2>Term schedule generator</h2><p>Create one editable lesson draft for each scheduled class meeting.</p></div><span className="template-status"><Sparkles size={14} /> {generationMode === "ai" ? "AI assisted" : "Smart template"}</span></div>
     <form onSubmit={generate} onChange={() => setFormError(null)} className="term-form"><p className="required-hint"><b className="required-mark">*</b> Required fields</p><div className="term-form-grid top-row"><Label className="field"><span>Class<b className="required-mark"> *</b></span><select className="native-select" value={selectedClass?.id || ""} onChange={(event) => selectClass(event.target.value)} disabled={!classes.length} required><option value="" disabled>Select a class</option>{classes.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.grade}</option>)}</select></Label><Label className="field"><span>Lesson category<b className="required-mark"> *</b></span><Input value={category} onChange={(event) => setCategory(event.target.value)} placeholder="e.g. Midterm, Weekly Review, Project" maxLength={200} required /><small>Saved with every lesson in the batch and shown in print.</small></Label><TermField label="School year" value={effectiveYear} required placeholder="e.g. 2026–2027" onChange={setSchoolYear} /></div>
       <div className="term-form-grid schedule-row"><TermField label="Term start date" type="date" value={termStart} onChange={setTermStart} required /><TermField label="Number of weeks" type="number" min={1} max={24} required value={numberOfWeeks} onChange={(value) => setNumberOfWeeks(Number(value))} /><TermField label="Starting week no." type="number" min={1} max={52} required value={startingWeek} onChange={(value) => setStartingWeek(Number(value))} /><TermField label="Duration" type="number" min={10} max={240} required value={effectiveDuration} onChange={(value) => setDuration(Number(value))} /><GenerationModeSelect value={generationMode} disabled={busy} onChange={(value) => { setGenerationMode(value); setFormError(null); }} /></div>
+      {generationMode === "ai" && <AiModelSelect value={aiModel} onChange={(value) => { setAiModel(value); setFormError(null); }} disabled={busy} />}
       <div className="field"><span>Class meeting days<b className="required-mark"> *</b></span><div className="day-selection"><WeekdayPicker value={effectiveDays} onChange={(value) => { setMeetingDays(value); setFormError(null); }} /></div><small>Each selected day creates one lesson per week. The first meeting falls on or after the term start date.</small></div>
       <div className="term-form-grid source-row"><Label className="field"><span>Course overview<b className="required-mark"> *</b></span><select className="native-select" required value={overview?.id || ""} disabled={!availableCourses.length} onChange={(event) => setOverviewId(event.target.value)}>{availableCourses.length ? availableCourses.map((item) => <option key={item.id} value={item.id}>{item.title} · {item.weeks.length} weeks</option>) : <option value="">No saved course overview for this class</option>}</select><small>The weekly topic, focus, activity, and presentation goal guide each meeting.</small></Label></div>
       <div className="term-form-grid defaults-row"><TermField label="Default chapter" value={chapter} onChange={setChapter} placeholder={settings.chapter || "Optional"} /><TermField label="Default unit" value={unit} onChange={setUnit} placeholder={settings.unit || "Optional"} /><ResourceSelect key={resourcePickerRevision} resources={settings.resources} value={effectiveResource} onChange={setResource} /></div>

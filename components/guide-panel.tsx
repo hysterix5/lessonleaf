@@ -77,7 +77,7 @@ export function GuidePanel({ signedIn, onNavigate, onSignIn }: {
 
       <GuideStep number={5} id="single" title="Create one lesson plan" action="Open single plan" onAction={() => onNavigate("builder")} note={<>An unsaved working draft stays in this browser but will not appear in <strong>My lesson plans</strong>. Save changes before choosing <strong>Create a fresh draft</strong>.</>}>
         <li>Open <strong>Generate plans → Single Plan</strong>. Select a saved class and course week, or enter lesson details yourself.</li>
-        <li>Check the topic, grade, week, date, duration, and other details. Fields marked <strong>*</strong> are required. Type a lesson category, choose a <strong>Generation mode</strong>, then create the draft. AI mode requires sign-in.</li>
+        <li>Check the topic, grade, week, date, duration, and other details. Fields marked <strong>*</strong> are required. Type a lesson category, choose a <strong>Generation mode</strong> and, for AI drafts, an <strong>AI model</strong>. Auto balances available models. AI mode requires sign-in.</li>
         <li>Edit <strong>Goals &amp; resources</strong>, <strong>Teaching flow</strong>, and <strong>Assessment &amp; more</strong>. The preview updates as you work.</li>
         <li>Select <strong>Save draft</strong> to return later, or <strong>Mark ready</strong> when the plan is ready to teach.</li>
       </GuideStep>
@@ -86,7 +86,7 @@ export function GuidePanel({ signedIn, onNavigate, onSignIn }: {
         <li>Sign in and prepare a class and course overview.</li>
         <li>Open <strong>Generate plans → Term Schedule</strong>. Choose the class, type any lesson category, and set the term start date, number of weeks, and starting week number. Fields marked <strong>*</strong> are required. You can generate 1–24 weeks at a time, within weeks 1–52.</li>
         <li>Review the meeting days, duration, and school year. Select a saved <strong>Course overview</strong> for the class.</li>
-        <li>Choose <strong>Smart Template</strong> or <strong>AI draft</strong>. Fix any missing-week message, review the lesson count and dates, then generate the drafts.</li>
+        <li>Choose <strong>Smart Template</strong> or <strong>AI draft</strong>. For AI drafts, select an <strong>AI model</strong> or keep Auto. Fix any missing-week message, review the lesson count and dates, then generate the drafts.</li>
       </GuideStep>
 
       <GuideStep number={7} id="library" title="Find, edit, and print your plans" action="Open my lesson plans" onAction={() => onNavigate("library")} note={<>The sample PDF shows the reference format. Uploading new PDFs and automatic Drive export are not available yet. Review AI drafts before teaching.</>}>

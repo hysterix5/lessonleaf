@@ -1,5 +1,5 @@
 import "server-only";
-import { parseAiLessonBatch, type AiLessonContent, type AiLessonRequest } from "./ai-content";
+import { aiModels, isAiModelChoice, parseAiLessonBatch, type AiLessonContent, type AiLessonRequest, type AiModel, type AiModelChoice } from "./ai-content";
 
 const contentProperties = {
   keyFocus: { type: "string" }, activityHighlight: { type: "string" },
@@ -33,11 +33,10 @@ const responseSchema = {
   additionalProperties: false,
 } as const;
 
-const models = ["openai/gpt-oss-120b", "openai/gpt-oss-20b"] as const;
 const maxLessonsPerCall = 4;
 const maxInputCharsPerCall = 8_000;
 const fallbackCooldownMs = 30_000;
-const modelCooldowns = new Map<(typeof models)[number], number>();
+const modelCooldowns = new Map<AiModel, number>();
 let nextModelIndex = 0;
 
 export class AiRateLimitError extends Error {
@@ -51,10 +50,21 @@ function retryAfterMs(response: Response): number {
   return Number.isFinite(seconds) && seconds > 0 ? Math.min(seconds * 1000, 86_400_000) : fallbackCooldownMs;
 }
 
-async function generateChunk(requests: AiLessonRequest[], apiKey: string): Promise<AiLessonContent[]> {
-  const preferredIndex = nextModelIndex;
-  nextModelIndex = (nextModelIndex + 1) % models.length;
+function configuredModels(): AiModel[] {
+  return aiModels.filter((model) => model.startsWith("gemini-")
+    ? !!process.env.GEMINI_API_KEY?.trim()
+    : !!process.env.GROQ_API_KEY?.trim());
+}
 
+async function generateChunk(requests: AiLessonRequest[], choice: AiModelChoice): Promise<AiLessonContent[]> {
+  const available = configuredModels();
+  if (!available.length) throw new Error("AI generation is not configured. Add GROQ_API_KEY or GEMINI_API_KEY to the app environment and restart the server.");
+  if (choice !== "auto" && !available.includes(choice)) throw new Error("The selected AI model is not configured on the server.");
+  const preferredIndex = nextModelIndex % available.length;
+  if (choice === "auto") nextModelIndex = (preferredIndex + 1) % available.length;
+  const models = choice === "auto"
+    ? [...available.slice(preferredIndex), ...available.slice(0, preferredIndex)]
+    : [choice];
   const prompt = [
     "Create a complete, practical lesson plan for each input. Return JSON matching the supplied schema.",
     "The lesson format follows an editable school lesson plan: goals, objectives, vocabulary, resources, warm-up, timed teaching procedure, teacher and student actions, activity, presentation, assessment, homework, and notes.",
@@ -64,17 +74,30 @@ async function generateChunk(requests: AiLessonRequest[], apiKey: string): Promi
     JSON.stringify(requests.map((request, inputIndex) => ({ inputIndex, ...request }))),
   ].join("\n\n");
 
-  for (const model of [models[preferredIndex], models[(preferredIndex + 1) % models.length]]) {
+  for (const model of models) {
     if ((modelCooldowns.get(model) ?? 0) > Date.now()) continue;
 
+    const gemini = model.startsWith("gemini-");
+    const apiKey = (gemini ? process.env.GEMINI_API_KEY : process.env.GROQ_API_KEY)!.trim();
     let response: Response;
     try {
-      response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      response = await fetch(gemini
+        ? `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`
+        : "https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
-        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        headers: gemini
+          ? { "x-goog-api-key": apiKey, "Content-Type": "application/json" }
+          : { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
         cache: "no-store",
         signal: AbortSignal.timeout(90_000),
-        body: JSON.stringify({
+        body: JSON.stringify(gemini ? {
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseFormat: { text: { mimeType: "application/json", schema: responseSchema } },
+            thinkingConfig: { thinkingLevel: "MINIMAL" },
+            maxOutputTokens: 1100 * requests.length,
+          },
+        } : {
           model,
           messages: [{ role: "user", content: prompt }],
           response_format: { type: "json_schema", json_schema: { name: "lesson_plans", strict: true, schema: responseSchema } },
@@ -94,7 +117,7 @@ async function generateChunk(requests: AiLessonRequest[], apiKey: string): Promi
       continue;
     }
     if (!response.ok) {
-      if (response.status === 401 || response.status === 403) throw new Error("The AI service rejected its key. Check GROQ_API_KEY in the server environment.");
+      if (response.status === 401 || response.status === 403) throw new Error(`The AI service rejected its key. Check ${gemini ? "GEMINI_API_KEY" : "GROQ_API_KEY"} in the server environment.`);
       if (response.status >= 500) throw new Error("The AI service is temporarily unavailable. Please try again shortly.");
       throw new Error("AI generation failed. Check the lesson details and try again.");
     }
@@ -102,7 +125,11 @@ async function generateChunk(requests: AiLessonRequest[], apiKey: string): Promi
     let result: unknown;
     try { result = await response.json(); }
     catch { throw new Error("The AI returned an unreadable response. Please try again."); }
-    const message = (result as { choices?: { message?: { content?: unknown } }[] })?.choices?.[0]?.message?.content;
+    const message = gemini
+      ? (result as { candidates?: { content?: { parts?: { text?: unknown; thought?: boolean }[] } }[] })?.candidates?.[0]?.content?.parts
+        ?.filter((part) => !part.thought && typeof part.text === "string")
+        .map((part) => part.text).join("")
+      : (result as { choices?: { message?: { content?: unknown } }[] })?.choices?.[0]?.message?.content;
     if (typeof message !== "string") throw new Error("The AI returned an incomplete lesson draft. Please try again.");
     let content: unknown;
     try { content = JSON.parse(message); }
@@ -115,15 +142,15 @@ async function generateChunk(requests: AiLessonRequest[], apiKey: string): Promi
   throw new AiRateLimitError(Math.max(1_000, nextAvailableAt - now));
 }
 
-export async function generateAiContent(requests: AiLessonRequest[]): Promise<AiLessonContent[]> {
-  const apiKey = process.env.GROQ_API_KEY?.trim();
-  if (!apiKey) throw new Error("AI generation is not configured. Add GROQ_API_KEY to the app environment and restart the server.");
+export async function generateAiContent(requests: AiLessonRequest[], choice: AiModelChoice = "auto"): Promise<AiLessonContent[]> {
+  if (!isAiModelChoice(choice)) throw new Error("Choose a valid AI model.");
+  if (!configuredModels().length) throw new Error("AI generation is not configured. Add GROQ_API_KEY or GEMINI_API_KEY to the app environment and restart the server.");
 
   const lessons: AiLessonContent[] = [];
   let chunk: AiLessonRequest[] = [];
   let chunkChars = 0;
   const appendChunk = async () => {
-    try { lessons.push(...await generateChunk(chunk, apiKey)); }
+    try { lessons.push(...await generateChunk(chunk, choice)); }
     catch (error) {
       if (error instanceof AiRateLimitError) throw new AiRateLimitError(error.retryAfterMs, lessons);
       throw error;

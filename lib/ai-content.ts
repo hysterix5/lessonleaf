@@ -2,6 +2,14 @@ import { parseGenerateInput, type LessonPlan } from "./lesson-plan";
 
 export const maxAiTermPlans = 12;
 
+export const aiModels = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "gemini-3.5-flash-lite"] as const;
+export type AiModel = (typeof aiModels)[number];
+export type AiModelChoice = AiModel | "auto";
+
+export function isAiModelChoice(value: unknown): value is AiModelChoice {
+  return value === "auto" || aiModels.some((model) => model === value);
+}
+
 export type AiLessonRequest = {
   details: Pick<LessonPlan, "subject" | "grade" | "schoolYear" | "week" | "topic" | "date" | "duration" | "chapter" | "unit" | "resource" | "pages">;
   guidance: Pick<LessonPlan, "keyFocus" | "activityHighlight" | "presentationGoal">;

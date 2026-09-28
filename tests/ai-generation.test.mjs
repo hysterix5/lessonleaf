@@ -39,15 +39,55 @@ function successfulResponse(topics) {
   return Response.json({ choices: [{ message: { content: JSON.stringify({ lessons: topics.map((topic, index) => lesson(index, topic)) }) } }] });
 }
 
+function successfulGeminiResponse(topics) {
+  return Response.json({ candidates: [{ content: { parts: [{ text: JSON.stringify({ lessons: topics.map((topic, index) => lesson(index, topic)) }) }] } }] });
+}
+
 async function withFakeGroq(handler) {
   const originalFetch = globalThis.fetch;
   const originalKey = process.env.GROQ_API_KEY;
+  const originalGeminiKey = process.env.GEMINI_API_KEY;
   process.env.GROQ_API_KEY = "test-key";
+  delete process.env.GEMINI_API_KEY;
   try { await handler(); }
   finally {
     globalThis.fetch = originalFetch;
     if (originalKey === undefined) delete process.env.GROQ_API_KEY;
     else process.env.GROQ_API_KEY = originalKey;
+    if (originalGeminiKey === undefined) delete process.env.GEMINI_API_KEY;
+    else process.env.GEMINI_API_KEY = originalGeminiKey;
+  }
+}
+
+async function withFakeProviders(handler) {
+  const originalFetch = globalThis.fetch;
+  const originalGroqKey = process.env.GROQ_API_KEY;
+  const originalGeminiKey = process.env.GEMINI_API_KEY;
+  process.env.GROQ_API_KEY = "test-groq-key";
+  process.env.GEMINI_API_KEY = "test-gemini-key";
+  try { await handler(); }
+  finally {
+    globalThis.fetch = originalFetch;
+    if (originalGroqKey === undefined) delete process.env.GROQ_API_KEY;
+    else process.env.GROQ_API_KEY = originalGroqKey;
+    if (originalGeminiKey === undefined) delete process.env.GEMINI_API_KEY;
+    else process.env.GEMINI_API_KEY = originalGeminiKey;
+  }
+}
+
+async function withFakeGemini(handler) {
+  const originalFetch = globalThis.fetch;
+  const originalGroqKey = process.env.GROQ_API_KEY;
+  const originalGeminiKey = process.env.GEMINI_API_KEY;
+  delete process.env.GROQ_API_KEY;
+  process.env.GEMINI_API_KEY = "test-gemini-key";
+  try { await handler(); }
+  finally {
+    globalThis.fetch = originalFetch;
+    if (originalGroqKey === undefined) delete process.env.GROQ_API_KEY;
+    else process.env.GROQ_API_KEY = originalGroqKey;
+    if (originalGeminiKey === undefined) delete process.env.GEMINI_API_KEY;
+    else process.env.GEMINI_API_KEY = originalGeminiKey;
   }
 }
 
@@ -144,4 +184,57 @@ test("when both models are rate-limited, generation returns a clear retry messag
   const generateAiContent = loadGeneration();
   globalThis.fetch = async () => new Response(null, { status: 429 });
   await assert.rejects(generateAiContent([{ details: { topic: "A" }, guidance: {} }]), /at capacity/);
+}));
+
+test("a selected Gemini model sends structured requests and keeps lesson order", async () => withFakeProviders(async () => {
+  const generateAiContent = loadGeneration();
+  globalThis.fetch = async (url, options) => {
+    assert.match(url, /gemini-3\.5-flash-lite:generateContent$/);
+    assert.equal(options.headers["x-goog-api-key"], "test-gemini-key");
+    const body = JSON.parse(options.body);
+    assert.equal(body.generationConfig.responseFormat.text.mimeType, "application/json");
+    assert.equal(body.generationConfig.thinkingConfig.thinkingLevel, "MINIMAL");
+    assert.equal(body.generationConfig.maxOutputTokens, 2_200);
+    const chunk = JSON.parse(body.contents[0].parts[0].text.split("\n\n").at(-1));
+    return successfulGeminiResponse(chunk.map((item) => item.details.topic));
+  };
+  const topics = ["Plants", "Habitats"];
+  const lessons = await generateAiContent(topics.map((topic) => ({ details: { topic }, guidance: {} })), "gemini-3.5-flash-lite");
+  assert.deepEqual(lessons.map((item) => item.keyFocus), topics);
+}));
+
+test("Auto can generate with only a Gemini key configured", async () => withFakeGemini(async () => {
+  const generateAiContent = loadGeneration();
+  globalThis.fetch = async (url) => {
+    assert.match(url, /gemini-3\.5-flash-lite:generateContent$/);
+    return successfulGeminiResponse(["Plants"]);
+  };
+  const lessons = await generateAiContent([{ details: { topic: "Plants" }, guidance: {} }]);
+  assert.equal(lessons[0].keyFocus, "Plants");
+}));
+
+test("Auto switches to Gemini after both Groq models reach their limits", async () => withFakeProviders(async () => {
+  const generateAiContent = loadGeneration();
+  const calls = [];
+  globalThis.fetch = async (url, options) => {
+    if (url.includes("api.groq.com")) {
+      calls.push(JSON.parse(options.body).model);
+      return new Response(null, { status: 429, headers: { "retry-after": "60" } });
+    }
+    calls.push("gemini-3.5-flash-lite");
+    return successfulGeminiResponse(["A"]);
+  };
+  const lessons = await generateAiContent([{ details: { topic: "A" }, guidance: {} }]);
+  assert.deepEqual(calls, ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "gemini-3.5-flash-lite"]);
+  assert.equal(lessons[0].keyFocus, "A");
+}));
+
+test("a chosen model waits instead of silently switching providers", async () => withFakeProviders(async () => {
+  const generateAiContent = loadGeneration();
+  const calls = [];
+  globalThis.fetch = async (url) => { calls.push(url); return new Response(null, { status: 429, headers: { "retry-after": "45" } }); };
+  await assert.rejects(generateAiContent([{ details: { topic: "A" }, guidance: {} }], "gemini-3.5-flash-lite"),
+    (error) => error.retryAfterMs === 45_000);
+  assert.equal(calls.length, 1);
+  assert.match(calls[0], /gemini-3\.5-flash-lite:generateContent$/);
 }));

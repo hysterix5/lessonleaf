@@ -1,6 +1,6 @@
 # Lessonleaf
 
-A lesson planning app modeled on `public/Lesson Plan sample.pdf`. The sample is a Grade 1 Science plan with an eight-week course outline and detailed weekly sections. Lessonleaf creates editable drafts with either its built-in Smart Template or AI generation using Groq's `openai/gpt-oss-120b` model.
+A lesson planning app modeled on `public/Lesson Plan sample.pdf`. The sample is a Grade 1 Science plan with an eight-week course outline and detailed weekly sections. Lessonleaf creates editable drafts with its built-in Smart Template or AI generation using Groq GPT-OSS and Google Gemini models.
 
 ## Setup
 
@@ -11,9 +11,10 @@ A lesson planning app modeled on `public/Lesson Plan sample.pdf`. The sample is 
    NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
    GROQ_API_KEY=your-groq-api-key
+   GEMINI_API_KEY=your-google-ai-studio-api-key
    ```
 
-   `SUPABASE_SECRET_KEY` is not used by the app. The browser connects directly to Supabase using the publishable key and each signed-in user's session. `GROQ_API_KEY` stays on the Next.js server and is used only for AI drafting; do not prefix it with `NEXT_PUBLIC_`. Restart the development server after changing `.env`.
+   `SUPABASE_SECRET_KEY` is not used by the app. The browser connects directly to Supabase using the publishable key and each signed-in user's session. Add at least one AI key. `GROQ_API_KEY` and `GEMINI_API_KEY` stay on the Next.js server; do not prefix them with `NEXT_PUBLIC_`. Auto balances configured models and switches on rate limits. Selecting a specific model keeps that choice for the whole draft. Restart the development server after changing `.env`.
 3. In Supabase Authentication, keep the Email provider enabled with password sign-in. Set the Site URL and allow the app URL as a redirect URL; for local development, add `http://localhost:3000`. Email confirmation and password reset use this URL. If you previously signed in only with email links, use **Forgot password?** once to set a password.
 4. From `H:\devs\lesson_plan_generator`, install dependencies and start the development server:
 
@@ -32,7 +33,7 @@ Open [http://localhost:3000](http://localhost:3000). You can create and edit a s
 2. **Set your defaults** in **Settings**: school and teacher details, school year, duration, a school logo, and common lesson fields. Select **Save settings**. Logo upload requires sign-in.
 3. **Add a class** in **Classes** with its subject, grade, meeting days, and lesson duration. Skip this if you only need a manual single plan.
 4. **Create a course overview** in **Course** for that class. Give every scheduled week a numbered topic.
-5. **Create one lesson** under **Generate plans → Single Plan**: enter the lesson details, choose **Smart Template** or **AI draft**, create the draft, edit its sections, then select **Save draft** or **Mark ready**. AI mode requires sign-in.
+5. **Create one lesson** under **Generate plans → Single Plan**: enter the lesson details, choose **Smart Template** or **AI draft**, select an AI model when needed, create the draft, edit its sections, then select **Save draft** or **Mark ready**. AI mode requires sign-in.
 6. **Create a full term** under **Generate plans → Term Schedule**: choose the class, saved course overview, start date, number of weeks, meeting days, and generation mode. Review the plan count, then generate the drafts. AI mode supports up to 12 meetings per batch; Smart Template supports the full schedule range.
 7. **Revisit and print** plans from **My lesson plans**. Saved plans are grouped by course, with plans that have no course under **Other plans**. Open a plan to edit it, or choose a layout and select **Print all** on a course to print its complete set of lessons as one document. For one lesson, open it and use the printer icon in **Lesson preview**. Your browser can save either printout as a PDF.
 
@@ -54,8 +55,8 @@ The term generator checks that every requested week has content before saving al
 - `lib/school-logo.ts` and `lib/use-school-logo.ts`: logo validation and private Storage downloads for settings and print previews.
 - `lib/catalog.ts`: class and course models and direct Supabase CRUD.
 - `lib/term-schedule.ts`: meeting-date calculation and editable batch draft creation.
-- `app/actions/generate-ai.ts`, `lib/ai-generation.ts`, and `lib/ai-content.ts`: authenticated server-side AI generation, Groq response validation, and safe merging into editable drafts.
+- `app/actions/generate-ai.ts`, `lib/ai-generation.ts`, and `lib/ai-content.ts`: authenticated server-side AI generation, Groq and Gemini response validation, and safe merging into editable drafts.
 
-The app has no Next.js API routes. Template drafting runs in the browser; saving and sign-in use Supabase directly. AI requests use a Next.js Server Action so the Groq key is never sent to the browser.
+The app has no Next.js API routes. Template drafting runs in the browser; saving and sign-in use Supabase directly. AI requests use a Next.js Server Action so neither provider key is sent to the browser. Gemini limits depend on the Google AI Studio project and can be checked on its [rate limits page](https://ai.google.dev/gemini-api/docs/rate-limits).
 
 Run `npm.cmd run lint`, `npm.cmd run test`, and `npm.cmd run build` to verify the project from the workspace root.

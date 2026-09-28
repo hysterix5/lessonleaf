@@ -1,6 +1,6 @@
 # Lessonleaf user guide
 
-Lessonleaf creates editable lesson plans from a structured template based on the [sample lesson plan PDF](../public/Lesson%20Plan%20sample.pdf). You can use Smart Template or AI drafting with GPT-OSS 120B; uploading new PDFs is not available. You can make a template plan without an account, but you need an account to use AI, save plans, manage classes and courses, or generate a full term.
+Lessonleaf creates editable lesson plans from a structured template based on the [sample lesson plan PDF](../public/Lesson%20Plan%20sample.pdf). You can use Smart Template or AI drafting with GPT-OSS or Gemini; uploading new PDFs is not available. You can make a template plan without an account, but you need an account to use AI, save plans, manage classes and courses, or generate a full term.
 
 If you are running Lessonleaf yourself, complete the [README setup](../README.md#setup) first. Then open the app in your browser. You can return to these steps any time from **Guide** in the app's navigation.
 
@@ -50,7 +50,7 @@ The overview belongs to the selected class. A term batch cannot be generated if 
 1. Open **Generate plans** and select **Single Plan**.
 2. Under **Lesson details**, optionally choose a saved **Class** and **Course overview**, then select a **Course week**. A class fills its subject, grade, section, school year, and duration; a course week fills its topic and unit. You can also type your own lesson details. Type any **Lesson category**, such as Regular, Midterm, or Skills Review.
 3. Review the subject, grade, school year, week, date, lesson topic, duration, and any optional chapter, resource, pages, or teacher name. Fields marked **\*** are required; the date and other unmarked fields may be left blank. Enter a lesson topic if one was not filled automatically.
-4. Choose **Generation mode**: **Smart Template** for an immediate structured draft, or **AI draft** for a lesson written around your topic and course guidance. AI drafting requires sign-in and a server-side Groq key. Select **Create lesson draft** or **Create AI lesson draft**. The draft appears in **Lesson preview**.
+4. Choose **Generation mode**: **Smart Template** for an immediate structured draft, or **AI draft** for a lesson written around your topic and course guidance. For AI, choose **Auto** to balance configured models or select GPT-OSS 120B, GPT-OSS 20B, or Gemini 3.5 Flash-Lite. AI drafting requires sign-in and a server-side key for the selected provider. Select **Create lesson draft** or **Create AI lesson draft**. The draft appears in **Lesson preview**.
 5. Edit the plan under **Shape the content**. Work through **Goals & resources**, **Teaching flow**, and **Assessment & more**; the preview updates as you edit.
 6. Select **Save draft** to keep working later or **Mark ready** when the lesson is ready to teach. These actions save the plan to your account.
 
@@ -64,7 +64,7 @@ Creating a fresh draft replaces the current working draft in the editor. Save an
 4. Set **Number of weeks** and **Starting week no.**. You can generate 1–24 weeks at a time, within course weeks 1–52.
 5. Select a saved **Course overview** for this class.
 6. Optionally enter a default chapter and unit. Review the summary showing the number of plans and the first and last class dates. Each selected meeting day creates one plan per week, starting on or after the term start date.
-7. Choose **Generation mode**. **Smart Template** supports the full schedule range. **AI draft** writes content for up to 12 class meetings in one batch; reduce the weeks or meeting days if the count is higher. If a missing-week message appears, add those weeks in **Course** or adjust the range. When the schedule looks right, generate the drafts.
+7. Choose **Generation mode**. **Smart Template** supports the full schedule range. For **AI draft**, select a model or keep Auto; AI writes content for up to 12 class meetings in one batch. Reduce the weeks or meeting days if the count is higher. If a missing-week message appears, add those weeks in **Course** or adjust the range. When the schedule looks right, generate the drafts.
 
 The new drafts appear in **My lesson plans**. Each meeting gets its own editable plan with the selected category, date, and weekly topic. In AI mode, all content is generated before saving the batch; if AI generation fails, no drafts from that attempt are saved. Review AI output before teaching.
 
@@ -78,4 +78,4 @@ The new drafts appear in **My lesson plans**. Each meeting gets its own editable
 6. To print a whole course, choose **Normal layout** or **Styled layout** in **My lesson plans**, then select **Print all** beside that course. The print dialog contains every saved lesson in the course in date order, with each lesson starting on a new page. Choose **Save as PDF** to make one PDF for the course. Search only changes which cards you see; **Print all** still includes the full course.
 7. Select **New lesson plan** to start another plan. To remove a saved plan, select its delete icon in the library and then **Confirm delete**.
 
-The sample PDF is a reference for the printable format; the app does not read new PDFs. If your saved items do not appear, check that you are signed in to the same account and that the Supabase tables in the [README setup](../README.md#setup) have been created. If AI reports that it is not configured, add `GROQ_API_KEY` to the app's `.env` and restart the server.
+The sample PDF is a reference for the printable format; the app does not read new PDFs. If your saved items do not appear, check that you are signed in to the same account and that the Supabase tables in the [README setup](../README.md#setup) have been created. If AI reports that it is not configured, add `GROQ_API_KEY` or `GEMINI_API_KEY` to the app's `.env` and restart the server.

@@ -2,16 +2,17 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { AiRateLimitError, generateAiContent } from "@/lib/ai-generation";
-import { maxAiTermPlans, parseAiLessonRequest, type AiLessonRequest } from "@/lib/ai-content";
+import { isAiModelChoice, maxAiTermPlans, parseAiLessonRequest, type AiLessonRequest, type AiModelChoice } from "@/lib/ai-content";
 import type { AiDraftResult } from "@/lib/ai-retry";
 
-export async function generateAiLessonDrafts(accessToken: string, requests: AiLessonRequest[]): Promise<AiDraftResult> {
+export async function generateAiLessonDrafts(accessToken: string, requests: AiLessonRequest[], model: AiModelChoice = "auto"): Promise<AiDraftResult> {
   if (typeof accessToken !== "string" || !accessToken || accessToken.length > 4096) {
     return { ok: false, error: "Sign in to use AI generation." };
   }
   if (!Array.isArray(requests) || !requests.length || requests.length > maxAiTermPlans) {
     return { ok: false, error: `AI generation supports up to ${maxAiTermPlans} lessons at a time. Reduce the schedule or use Smart Template.` };
   }
+  if (!isAiModelChoice(model)) return { ok: false, error: "Choose a valid AI model." };
   if (JSON.stringify(requests).length > maxAiTermPlans * 2_500) return { ok: false, error: "Lesson details are too long for AI generation." };
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -24,7 +25,7 @@ export async function generateAiLessonDrafts(accessToken: string, requests: AiLe
     if (error || !data.user) return { ok: false, error: "Your sign-in has expired. Sign in again to use AI generation." };
 
     const validated = requests.map(parseAiLessonRequest);
-    return { ok: true, lessons: await generateAiContent(validated) };
+    return { ok: true, lessons: await generateAiContent(validated, model) };
   } catch (error) {
     if (error instanceof AiRateLimitError) {
       return { ok: false, error: error.message, retryAfterMs: error.retryAfterMs, lessons: error.completedLessons };

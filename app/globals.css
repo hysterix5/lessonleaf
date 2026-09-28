@@ -183,6 +183,8 @@
 .template-selector { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
 .editor-column .generation-mode-field { margin-top: 20px; }
 .generation-mode-field small { color: #7c9187; line-height: 1.45; }
+.editor-column .ai-model-field { margin-top: 14px; }
+.term-form > .ai-model-field { max-width: 420px; }
 .template-selector > span { color: #667d73; font-size: 10px; font-weight: 800; }
 .template-selector > div { display: flex; gap: 4px; padding: 4px; border: 1px solid #dce8e0; border-radius: 10px; background: #f4f8f4; }
 .template-option { height: 30px; padding: 0 10px; border: 0; border-radius: 7px; background: transparent; color: #638176; font-size: 10px; font-weight: 800; }
