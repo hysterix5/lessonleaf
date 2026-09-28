@@ -441,7 +441,7 @@ export default function Home() {
       <div className="side-label">YOUR WORKSPACE</div>
       <WorkspaceNav view={view} onNavigate={navigate} savedCount={saved.length} />
       <div className="sidebar-bottom">
-        <nav className="sidebar-legal" aria-label="Legal information"><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms and Conditions</Link></nav>
+        <nav className="sidebar-legal" aria-label="More information"><Link href="/developer">Developer</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms and Conditions</Link></nav>
         <span className="sidebar-footer"><Leaf size={14} aria-hidden="true" /> More time for what matters.</span>
       </div>
     </aside>
@@ -493,7 +493,7 @@ export default function Home() {
       : view === "guide" ? <GuidePanel signedIn={!!session} onNavigate={(destination) => { setView(destination); window.scrollTo(0, 0); }} onSignIn={() => setAuthOpen(true)} />
       : <LessonLibrary signedIn={!!session} plans={saved} courses={courses} classes={classes} query={libraryQuery} onQueryChange={setLibraryQuery} onNew={reset} onSignIn={() => setAuthOpen(true)} onOpen={open} onDelete={remove} confirmDelete={confirmDelete} deleting={loading} template={printTemplate} onTemplateChange={setPrintTemplate} onPrintCourse={setPrintCourse} />}
       {printCourse && <CoursePrintDocument group={printCourse} template={printTemplate} settings={settings} logoUrl={logoUrl} />}
-      <footer className="app-footer"><span>© 2026 Lessonleaf</span><nav aria-label="Legal information"><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms and Conditions</Link></nav></footer>
+      <footer className="app-footer"><span>© 2026 Lessonleaf</span><nav aria-label="More information"><Link href="/developer">Developer</Link><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms and Conditions</Link></nav></footer>
     </main>
     <Dialog open={authOpen} onOpenChange={(open) => { setAuthOpen(open); if (!open) { setAuthError(null); setPassword(""); setConfirmPassword(""); setAuthMode("sign-in"); } }}>
       <DialogContent className="auth-modal">

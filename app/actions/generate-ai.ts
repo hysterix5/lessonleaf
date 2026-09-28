@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { AiRateLimitError, generateAiContent } from "@/lib/ai-generation";
 import { isAiModelChoice, maxAiTermPlans, parseAiLessonRequest, type AiLessonRequest, type AiModelChoice } from "@/lib/ai-content";
 import type { AiDraftResult } from "@/lib/ai-retry";
+import { saveAiUsage } from "@/lib/ai-usage-store";
 
 export async function generateAiLessonDrafts(accessToken: string, requests: AiLessonRequest[], model: AiModelChoice = "auto"): Promise<AiDraftResult> {
   if (typeof accessToken !== "string" || !accessToken || accessToken.length > 4096) {
@@ -25,7 +26,10 @@ export async function generateAiLessonDrafts(accessToken: string, requests: AiLe
     if (error || !data.user) return { ok: false, error: "Your sign-in has expired. Sign in again to use AI generation." };
 
     const validated = requests.map(parseAiLessonRequest);
-    return { ok: true, lessons: await generateAiContent(validated, model) };
+    return { ok: true, lessons: await generateAiContent(validated, model, async (usage) => {
+      try { await saveAiUsage(data.user.id, usage); }
+      catch (error) { console.error("Could not record AI token usage.", error); }
+    }) };
   } catch (error) {
     if (error instanceof AiRateLimitError) {
       return { ok: false, error: error.message, retryAfterMs: error.retryAfterMs, lessons: error.completedLessons };

@@ -43,6 +43,19 @@ function successfulGeminiResponse(topics) {
   return Response.json({ candidates: [{ content: { parts: [{ text: JSON.stringify({ lessons: topics.map((topic, index) => lesson(index, topic)) }) }] } }] });
 }
 
+test("reports provider usage even when a paid response contains an invalid lesson", async () => withFakeGroq(async () => {
+  const generateAiContent = loadGeneration();
+  const recorded = [];
+  globalThis.fetch = async () => Response.json({
+    usage: { prompt_tokens: 120, completion_tokens: 40, total_tokens: 160 },
+    choices: [{ message: { content: "not JSON" } }],
+  });
+  await assert.rejects(generateAiContent([{ details: { topic: "Plants" }, guidance: {} }], "openai/gpt-oss-120b", async (usage) => {
+    recorded.push(usage);
+  }), /unreadable lesson draft/);
+  assert.deepEqual(recorded, [{ provider: "Groq", model: "openai/gpt-oss-120b", inputTokens: 120, outputTokens: 40, totalTokens: 160 }]);
+}));
+
 async function withFakeGroq(handler) {
   const originalFetch = globalThis.fetch;
   const originalKey = process.env.GROQ_API_KEY;

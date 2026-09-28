@@ -25,7 +25,7 @@ const sections = [
         <li><strong>Browser data.</strong> Supabase stores the sign-in session in your browser so you can stay signed in. Lessonleaf also keeps guest settings and an unsaved working draft in browser local storage until you remove them or clear browser data.</li>
         <li><strong>Technical information.</strong> Hosting and service providers may process information such as IP address, browser type, request times, and error or security logs to deliver and protect the service.</li>
       </ul>
-      <p>The app currently has no advertising tracker or analytics SDK.</p>
+      <p>We use Vercel Web Analytics to understand visits and page views. It processes limited technical information about each visit without using advertising cookies. We also record token counts, model names, and request times for AI drafting so we can monitor API usage. These usage records do not include lesson content.</p>
     </>,
   },
   {
@@ -48,7 +48,7 @@ const sections = [
     id: "sharing",
     title: "Who receives information",
     content: <>
-      <p>We use Supabase for account authentication, database storage, and private school-logo storage. We use Google for Gemini AI drafting when selected or reached through Auto. We use Groq for AI drafting when selected or reached through Auto. Our hosting provider may process the technical information needed to serve the app. These providers may process data in countries outside the Philippines.</p>
+      <p>We use Supabase for account authentication, database storage, private school-logo storage, and AI usage records. We use Google for Gemini AI drafting when selected or reached through Auto. We use Groq for AI drafting when selected or reached through Auto. Vercel provides Web Analytics and may process technical information needed to serve the app. These providers may process data in countries outside the Philippines.</p>
       <p>We may also disclose information if required by law or to address fraud, abuse, or security incidents, subject to applicable law.</p>
     </>,
   },
@@ -56,7 +56,7 @@ const sections = [
     id: "storage",
     title: "Storage, security, and retention",
     content: <>
-      <p>Saved plans, classes, course overviews, settings, and uploaded logos are stored with Supabase. The app’s database access rules and private logo storage are designed to limit access to the signed-in account. No internet service can guarantee absolute security, so please use a strong password and protect access to your device and email account.</p>
+      <p>Saved plans, classes, course overviews, settings, uploaded logos, and AI usage counts are stored with Supabase. The app’s database access rules and private logo storage are designed to limit access to the signed-in account; AI usage counts are available only through the protected Developer page. No internet service can guarantee absolute security, so please use a strong password and protect access to your device and email account.</p>
       <p>Guest settings and unsaved drafts remain in your browser until you clear them through the app or your browser. Account information and saved content are kept while your account remains active or until you remove them or request deletion, subject to necessary backups, security records, and legal obligations. Service providers may keep records under their own retention policies.</p>
     </>,
   },

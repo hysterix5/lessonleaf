@@ -1,5 +1,6 @@
 import "server-only";
 import { aiModels, isAiModelChoice, parseAiLessonBatch, type AiLessonContent, type AiLessonRequest, type AiModel, type AiModelChoice } from "./ai-content";
+import { readAiUsage, type AiUsage } from "./ai-usage";
 
 const contentProperties = {
   keyFocus: { type: "string" }, activityHighlight: { type: "string" },
@@ -56,7 +57,7 @@ function configuredModels(): AiModel[] {
     : !!process.env.GROQ_API_KEY?.trim());
 }
 
-async function generateChunk(requests: AiLessonRequest[], choice: AiModelChoice): Promise<AiLessonContent[]> {
+async function generateChunk(requests: AiLessonRequest[], choice: AiModelChoice, onUsage?: (usage: AiUsage) => Promise<void>): Promise<AiLessonContent[]> {
   const available = configuredModels();
   if (!available.length) throw new Error("AI generation is not configured. Add GROQ_API_KEY or GEMINI_API_KEY to the app environment and restart the server.");
   if (choice !== "auto" && !available.includes(choice)) throw new Error("The selected AI model is not configured on the server.");
@@ -125,6 +126,8 @@ async function generateChunk(requests: AiLessonRequest[], choice: AiModelChoice)
     let result: unknown;
     try { result = await response.json(); }
     catch { throw new Error("The AI returned an unreadable response. Please try again."); }
+    const usage = readAiUsage(result, model);
+    if (usage && onUsage) await onUsage(usage);
     const message = gemini
       ? (result as { candidates?: { content?: { parts?: { text?: unknown; thought?: boolean }[] } }[] })?.candidates?.[0]?.content?.parts
         ?.filter((part) => !part.thought && typeof part.text === "string")
@@ -142,7 +145,7 @@ async function generateChunk(requests: AiLessonRequest[], choice: AiModelChoice)
   throw new AiRateLimitError(Math.max(1_000, nextAvailableAt - now));
 }
 
-export async function generateAiContent(requests: AiLessonRequest[], choice: AiModelChoice = "auto"): Promise<AiLessonContent[]> {
+export async function generateAiContent(requests: AiLessonRequest[], choice: AiModelChoice = "auto", onUsage?: (usage: AiUsage) => Promise<void>): Promise<AiLessonContent[]> {
   if (!isAiModelChoice(choice)) throw new Error("Choose a valid AI model.");
   if (!configuredModels().length) throw new Error("AI generation is not configured. Add GROQ_API_KEY or GEMINI_API_KEY to the app environment and restart the server.");
 
@@ -150,7 +153,7 @@ export async function generateAiContent(requests: AiLessonRequest[], choice: AiM
   let chunk: AiLessonRequest[] = [];
   let chunkChars = 0;
   const appendChunk = async () => {
-    try { lessons.push(...await generateChunk(chunk, choice)); }
+    try { lessons.push(...await generateChunk(chunk, choice, onUsage)); }
     catch (error) {
       if (error instanceof AiRateLimitError) throw new AiRateLimitError(error.retryAfterMs, lessons);
       throw error;

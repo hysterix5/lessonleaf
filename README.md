@@ -4,7 +4,7 @@ A lesson planning app modeled on `public/Lesson Plan sample.pdf`. The sample is 
 
 ## Setup
 
-1. In your Supabase project's SQL Editor, run [`supabase/migrations/20260924_create_lesson_plans.sql`](supabase/migrations/20260924_create_lesson_plans.sql), [`supabase/migrations/20260924_create_user_settings.sql`](supabase/migrations/20260924_create_user_settings.sql), [`supabase/migrations/20260924_create_classes_and_courses.sql`](supabase/migrations/20260924_create_classes_and_courses.sql), and [`supabase/migrations/20260925_create_school_logos.sql`](supabase/migrations/20260925_create_school_logos.sql). If the first three migrations are already applied, run only the new school-logo migration. It creates a private Storage bucket with user-scoped access and a 2 MB image limit.
+1. In your Supabase project's SQL Editor, run the migrations in `supabase/migrations` in date order. For an existing installation, apply [`20260928_create_ai_usage.sql`](supabase/migrations/20260928_create_ai_usage.sql) to enable private API usage records and the developer dashboard.
 2. Set these variables in this app directory's `.env` file:
 
    ```env
@@ -12,9 +12,11 @@ A lesson planning app modeled on `public/Lesson Plan sample.pdf`. The sample is 
    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
    GROQ_API_KEY=your-groq-api-key
    GEMINI_API_KEY=your-google-ai-studio-api-key
+   SUPABASE_SECRET_KEY=your-supabase-secret-key
+   DEVELOPER_SECRET_KEY=your-random-secret-of-at-least-32-characters
    ```
 
-   `SUPABASE_SECRET_KEY` is not used by the app. The browser connects directly to Supabase using the publishable key and each signed-in user's session. Add at least one AI key. `GROQ_API_KEY` and `GEMINI_API_KEY` stay on the Next.js server; do not prefix them with `NEXT_PUBLIC_`. Auto balances configured models and switches on rate limits. Selecting a specific model keeps that choice for the whole draft. Restart the development server after changing `.env`.
+   The browser connects directly to Supabase using the publishable key and each signed-in user's session. The server uses `SUPABASE_SECRET_KEY` only to write API usage records and read aggregated usage. The separate `DEVELOPER_SECRET_KEY` unlocks the Developer page through an eight-hour, HttpOnly session cookie. Generate a random key of at least 32 characters and never prefix either secret with `NEXT_PUBLIC_`. Add at least one AI key. `GROQ_API_KEY` and `GEMINI_API_KEY` also stay on the Next.js server. Auto balances configured models and switches on rate limits. Selecting a specific model keeps that choice for the whole draft. Restart the development server after changing `.env`.
 3. In Supabase Authentication, keep the Email provider enabled with password sign-in. Set the Site URL and allow the app URL as a redirect URL; for local development, add `http://localhost:3000`. Email confirmation and password reset use this URL. If you previously signed in only with email links, use **Forgot password?** once to set a password.
 4. From `H:\devs\lesson_plan_generator`, install dependencies and start the development server:
 
@@ -22,6 +24,8 @@ A lesson planning app modeled on `public/Lesson Plan sample.pdf`. The sample is 
    npm.cmd --prefix lesson-plan-generator install
    npm.cmd run dev
    ```
+
+5. In the Vercel project dashboard, set `SUPABASE_SECRET_KEY` and `DEVELOPER_SECRET_KEY` for the deployment, enable **Web Analytics**, and deploy the app. Enter the developer key on the **Developer** page to see the last 30 days of AI token usage from Supabase. Visitor and page-view data appears in Vercel's Analytics tab. Historical token usage from before the migration is unavailable.
 
    These commands work in Windows PowerShell. In other shells, use `npm` instead of `npm.cmd`. You can also run both commands inside `lesson-plan-generator` without `--prefix`.
 
@@ -60,7 +64,8 @@ The term generator checks that every requested week has content before saving al
 - `lib/catalog.ts`: class and course models and direct Supabase CRUD.
 - `lib/term-schedule.ts`: meeting-date calculation and editable batch draft creation.
 - `app/actions/generate-ai.ts`, `lib/ai-generation.ts`, and `lib/ai-content.ts`: authenticated server-side AI generation, Groq and Gemini response validation, and safe merging into editable drafts.
+- `app/developer/page.tsx`, `app/actions/developer-usage.ts`, and `lib/ai-usage-store.ts`: developer-only token usage dashboard and server-side usage recording.
 
-The app has no Next.js API routes. Template drafting runs in the browser; saving and sign-in use Supabase directly. AI requests use a Next.js Server Action so neither provider key is sent to the browser. Gemini limits depend on the Google AI Studio project and can be checked on its [rate limits page](https://ai.google.dev/gemini-api/docs/rate-limits).
+The app has no Next.js API routes. Template drafting runs in the browser; saving and sign-in use Supabase directly. AI requests use a Next.js Server Action so neither provider key is sent to the browser. API usage records contain model names and token counts, not lesson text. Gemini limits depend on the Google AI Studio project and can be checked on its [rate limits page](https://ai.google.dev/gemini-api/docs/rate-limits).
 
 Run `npm.cmd run lint`, `npm.cmd run test`, and `npm.cmd run build` to verify the project from the workspace root.

@@ -6,6 +6,7 @@ import "./theme.css";
 import { Figtree } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
+import { Analytics } from "@vercel/analytics/next";
 
 const figtree = Figtree({ subsets: ["latin"], variable: "--font-figtree", display: "swap" });
 
@@ -21,7 +22,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: `try{var saved=localStorage.getItem('lessonleaf-theme');if(saved==='dark'||(saved!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){if(matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.classList.add('dark')}}` }} />
       </head>
-      <body>{children}<Toaster /></body>
+      <body>{children}<Toaster /><Analytics /></body>
     </html>
   );
 }
