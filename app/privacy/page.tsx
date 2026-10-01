@@ -1,9 +1,23 @@
 import type { Metadata } from "next";
 import { LegalContact, LegalPage, legalOperatorName } from "@/components/legal-page";
+import { getSiteUrl } from "@/lib/site-url";
+
+const siteUrl = getSiteUrl();
+const title = "Privacy Policy | Lessonleaf";
+const description = "How Lessonleaf handles account details, lesson content, browser storage, and AI drafting data.";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Lessonleaf",
-  description: "How Lessonleaf handles account details, lesson content, browser storage, and AI drafting data.",
+  title,
+  description,
+  ...(siteUrl ? { alternates: { canonical: `${siteUrl}/privacy` } } : {}),
+  openGraph: {
+    title,
+    description,
+    type: "website",
+    siteName: "Lessonleaf",
+    ...(siteUrl ? { url: `${siteUrl}/privacy`, images: [{ url: `${siteUrl}/lessonleaf-social.png`, alt: "Lessonleaf lesson planning app" }] } : {}),
+  },
+  twitter: { card: "summary_large_image", title, description, ...(siteUrl ? { images: [`${siteUrl}/lessonleaf-social.png`] } : {}) },
 };
 
 const sections = [

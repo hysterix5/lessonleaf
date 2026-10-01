@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, BookOpen, FileText, Plus, Printer, Trash2 } from "lucide-react";
+import { ArrowRight, BookOpen, FileDown, FileText, Plus, Printer, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -28,16 +28,18 @@ type LibraryProps = {
   template: PrintTemplate;
   onTemplateChange: (template: PrintTemplate) => void;
   onPrintCourse: (group: CoursePlanGroup) => void;
+  onExportCourse: (group: CoursePlanGroup) => void;
+  exportingCourseId: string | null;
 };
 
-export function LessonLibrary({ signedIn, plans, courses, classes, query, onQueryChange, onNew, onSignIn, onOpen, onDelete, confirmDelete, deleting, template, onTemplateChange, onPrintCourse }: LibraryProps) {
+export function LessonLibrary({ signedIn, plans, courses, classes, query, onQueryChange, onNew, onSignIn, onOpen, onDelete, confirmDelete, deleting, template, onTemplateChange, onPrintCourse, onExportCourse, exportingCourseId }: LibraryProps) {
   const groups = groupPlansByCourse(plans, courses, classes);
   const visibleGroups = searchCourseGroups(groups, query);
   const visibleCount = visibleGroups.reduce((count, group) => count + group.visiblePlans.length, 0);
 
   return <div className="content library-content">
     <div className="library-header">
-      <div><span className="kicker">YOUR WORK</span><h1>My lesson plans</h1><p>Browse your plans by course, then open or print the lessons you need.</p></div>
+      <div><span className="kicker">YOUR WORK</span><h1>My lesson plans</h1><p>Browse your plans by course, then open, print, or download the lessons you need.</p></div>
       <Button type="button" className="primary-button" onClick={onNew}><Plus size={17} aria-hidden="true" /> New lesson plan</Button>
     </div>
     {signedIn && plans.length > 0 && <div className="library-filters">
@@ -48,10 +50,10 @@ export function LessonLibrary({ signedIn, plans, courses, classes, query, onQuer
       : plans.length === 0 ? <div className="library-empty"><span className="empty-icon"><FileText size={28} aria-hidden="true" /></span><h2>No plans saved yet</h2><p>Create your first lesson plan and it will appear here.</p><Button type="button" className="primary-button" onClick={onNew}>Build a lesson <ArrowRight size={17} aria-hidden="true" /></Button></div>
       : visibleCount === 0 ? <div className="library-empty"><span className="empty-icon"><FileText size={28} aria-hidden="true" /></span><h2>No matching plans</h2><p>Try another course, topic, class, or date.</p><Button type="button" className="secondary-button" onClick={() => onQueryChange("")}>Clear search</Button></div>
       : <>
-        <div className="library-print-options"><div><strong>Course printing</strong><span>Choose a layout, then print every saved plan in a course.</span></div><div className="template-selector"><span>Print template</span><div role="group" aria-label="Course print template"><Button type="button" className={`template-option ${template === "normal" ? "selected" : ""}`} aria-pressed={template === "normal"} onClick={() => onTemplateChange("normal")}>Normal layout</Button><Button type="button" className={`template-option ${template === "styled" ? "selected" : ""}`} aria-pressed={template === "styled"} onClick={() => onTemplateChange("styled")}>Styled layout</Button></div></div></div>
+        <div className="library-print-options"><div><strong>Export your course</strong><span>Choose a layout for Word or PDF. In the print dialog, choose Save as PDF.</span></div><div className="template-selector"><span>Export layout</span><div role="group" aria-label="Course export layout"><Button type="button" className={`template-option ${template === "normal" ? "selected" : ""}`} aria-pressed={template === "normal"} onClick={() => onTemplateChange("normal")}>Normal layout</Button><Button type="button" className={`template-option ${template === "styled" ? "selected" : ""}`} aria-pressed={template === "styled"} onClick={() => onTemplateChange("styled")}>Styled layout</Button></div></div></div>
         <div className="library-groups">{visibleGroups.map((group) => <section className="library-course-section" key={group.key} aria-label={group.title}>
           <div className="library-group-heading"><div><span className="kicker">{group.courseId ? "COURSE" : "NO COURSE"}</span><h2>{group.title}</h2><p>{group.className ? `${group.className} · ` : ""}{group.plans.length} {group.plans.length === 1 ? "lesson plan" : "lesson plans"}{group.visiblePlans.length !== group.plans.length ? ` · ${group.visiblePlans.length} shown` : ""}</p></div>
-            {group.courseId && <Button type="button" className="secondary-button library-print-button" onClick={() => onPrintCourse(group)} aria-label={`Print all ${group.plans.length} lesson plans in ${group.title}`}><Printer size={16} aria-hidden="true" /> Print all {group.plans.length}</Button>}
+            {group.courseId && <div className="library-group-actions"><Button type="button" className="secondary-button library-print-button" disabled={!!exportingCourseId} onClick={() => onExportCourse(group)} aria-label={`Download all ${group.plans.length} lesson plans in ${group.title} as a Word document`}><FileDown size={16} aria-hidden="true" /> {exportingCourseId === group.key ? "Preparing…" : "Download Word"}</Button><Button type="button" className="secondary-button library-print-button" onClick={() => onPrintCourse(group)} aria-label={`Print or save all ${group.plans.length} lesson plans in ${group.title} as PDF`}><Printer size={16} aria-hidden="true" /> Print / PDF</Button></div>}
           </div>
           <div className="library-grid">{group.visiblePlans.map((item) => <Card className="saved-card" key={item.id}>
             <div className="saved-top"><Badge className={`status ${item.status}`}>{item.status === "ready" ? "Ready to teach" : "Draft"}</Badge><span>WEEK {String(item.week).padStart(2, "0")}</span></div>

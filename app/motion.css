@@ -41,7 +41,7 @@
   :is(.workspace-list, .library-grid, .library-groups, .course-week-list, .settings-form, .class-stats, .class-benefits, [data-motion-list]) > :nth-child(4) { --leaf-delay: 135ms; }
   :is(.workspace-list, .library-grid, .library-groups, .course-week-list, .settings-form, .class-stats, .class-benefits, [data-motion-list]) > :nth-child(n + 5) { --leaf-delay: 180ms; }
 
-  :is(.primary-button, .hero-cta, .secondary-button, .sign-in-button, .print-button, .weekday-picker button, .generator-tabs button, .template-option, .editor-tabs button) {
+  :is(.primary-button, .hero-cta, .secondary-button, .sign-in-button, .print-button, .export-button, .weekday-picker button, .generator-tabs button, .template-option, .editor-tabs button) {
     transition: transform 180ms cubic-bezier(.2, .75, .25, 1), background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, color 180ms ease;
   }
 
@@ -53,7 +53,7 @@
     transition: transform 200ms cubic-bezier(.2, .75, .25, 1), border-color 200ms ease, background-color 200ms ease, box-shadow 200ms ease;
   }
 
-  :is(.side-nav button, .mobile-nav button, .generator-tabs button, .primary-button, .hero-cta, .secondary-button, .sign-in-button, .print-button, .workspace-item-main, .item-delete, .text-link) svg:not(.animate-spin),
+  :is(.side-nav button, .mobile-nav button, .generator-tabs button, .primary-button, .hero-cta, .secondary-button, .sign-in-button, .print-button, .export-button, .workspace-item-main, .item-delete, .text-link) svg:not(.animate-spin),
   :is(.settings-card-icon, .workspace-item-icon, .editor-symbol, .term-card-icon, .stat-icon, .reference-symbol, .empty-icon, .class-benefits > div > span) svg {
     transition: transform 220ms cubic-bezier(.2, .75, .25, 1);
     transform-origin: center;
@@ -64,7 +64,7 @@
   }
 
   @media (hover: hover) {
-    :is(.primary-button, .hero-cta, .secondary-button, .sign-in-button, .print-button, .weekday-picker button, .generator-tabs button, .template-option, .editor-tabs button):hover:not(:disabled) {
+    :is(.primary-button, .hero-cta, .secondary-button, .sign-in-button, .print-button, .export-button, .weekday-picker button, .generator-tabs button, .template-option, .editor-tabs button):hover:not(:disabled) {
       transform: translateY(-2px);
     }
 
@@ -83,7 +83,7 @@
       transform: translateX(3px);
     }
 
-    :is(.primary-button, .hero-cta, .secondary-button, .sign-in-button, .print-button, .generator-tabs button, .text-link):hover svg:not(.animate-spin) {
+    :is(.primary-button, .hero-cta, .secondary-button, .sign-in-button, .print-button, .export-button, .generator-tabs button, .text-link):hover svg:not(.animate-spin) {
       transform: translateX(2px) rotate(-4deg);
     }
 
@@ -97,7 +97,7 @@
     }
   }
 
-  :is(.primary-button, .hero-cta, .secondary-button, .sign-in-button, .print-button, .weekday-picker button, .generator-tabs button, .template-option, .editor-tabs button):active:not(:disabled) {
+  :is(.primary-button, .hero-cta, .secondary-button, .sign-in-button, .print-button, .export-button, .weekday-picker button, .generator-tabs button, .template-option, .editor-tabs button):active:not(:disabled) {
     transform: translateY(0) scale(.98);
   }
 

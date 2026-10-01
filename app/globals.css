@@ -224,6 +224,7 @@
 .library-groups { display: grid; gap: 32px; }
 .library-course-section { min-width: 0; }
 .library-group-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin: 0 0 15px; padding-bottom: 13px; border-bottom: 1px solid #dce8df; }
+.library-group-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .library-group-heading h2 { margin: 5px 0 3px; color: #233f37; font: 700 25px Georgia, "Times New Roman", serif; }
 .library-group-heading p { margin: 0; color: #71857a; font-size: 11px; }
 .library-print-button { display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0; min-height: 38px; }

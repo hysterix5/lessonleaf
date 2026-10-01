@@ -118,6 +118,14 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
 .note-bottom { right: 20px; bottom: 57px; transform: rotate(5deg); }
 .hero-art-caption { position: absolute; bottom: 23px; color: #646e50; font-size: 8px; letter-spacing: 2px; }
 
+.lessonleaf-overview { max-width: 1370px; margin: 40px 40px 0; padding: 25px 29px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+.lessonleaf-overview-heading h2 { margin: 8px 0 6px; color: var(--ink); font: 400 25px/1.2 var(--font-heading); }
+.lessonleaf-overview-heading p { margin: 0; color: var(--text-muted); font-size: 12px; line-height: 1.6; }
+.lessonleaf-overview-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; margin-top: 23px; }
+.lessonleaf-overview-grid > div { padding-left: 15px; border-left: 2px solid #c6dab9; }
+.lessonleaf-overview-grid h3 { margin: 0 0 7px; color: var(--ink); font-size: 12px; font-weight: 700; }
+.lessonleaf-overview-grid p { margin: 0; color: var(--text-muted); font-size: 11px; line-height: 1.7; }
+
 .curriculum { margin-top: 18px; border: 1px solid var(--line); border-radius: 12px; background: #fffefb; }
 .curriculum summary { display: flex; align-items: center; gap: 13px; padding: 16px 20px; list-style: none; }
 .curriculum summary::-webkit-details-marker { display: none; }
@@ -172,9 +180,12 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
 .editor-fields { display: grid; gap: 18px; }
 .preview-column { min-width: 0; }
 .preview-sticky { position: sticky; top: 24px; }
-.preview-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 17px; padding: 0 2px; }
+.preview-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 17px; padding: 0 2px; }
 .preview-heading h3 { margin: 6px 0 0; color: #394f34; font: 400 21px var(--font-heading); }
-.print-button { display: grid; place-items: center; width: 37px; height: 37px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: #587344; }
+.preview-actions { display: flex; align-items: center; gap: 7px; }
+.export-button { display: inline-flex; align-items: center; gap: 6px; min-height: 37px; padding: 0 11px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: #587344; font-size: 11px; font-weight: 700; }
+.export-button:hover { background: #edf3e3; }
+.print-button { display: inline-flex; align-items: center; gap: 6px; min-height: 37px; padding: 0 11px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: #587344; font-size: 11px; font-weight: 700; }
 .print-button:hover { background: #edf3e3; }
 .empty-preview { display: flex; flex-direction: column; align-items: center; min-height: 430px; padding: 36px 28px 27px; border: 1px dashed #d2dcc2; border-radius: 13px; background: #fbfcf6; text-align: center; }
 .empty-icon { display: grid; place-items: center; width: 94px; height: 104px; margin-bottom: 20px; border-radius: 50%; background: #eff3e5; color: #616f45; }
@@ -305,6 +316,8 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
 }
 @media (max-width: 760px) {
   .sidebar { display: none; }
+  .lessonleaf-overview { margin-inline: 20px; }
+  .lessonleaf-overview-grid { grid-template-columns: 1fr; gap: 17px; }
   .app-footer { margin-inline: 20px; }
   .topbar { height: 72px; padding-inline: 20px; background: #fffefb; }
   .breadcrumb { display: none; }
@@ -340,6 +353,8 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
 @media (max-width: 520px) {
   .topbar { padding-inline: 17px; }
   .app-footer { margin-inline: 17px; }
+  .lessonleaf-overview { margin-inline: 17px; padding: 22px; }
+  .lessonleaf-overview-heading h2 { font-size: 23px; }
   .content { padding-inline: 17px; }
   .generator-switch { padding-inline: 17px; }
   .generator-switch p, .workspace-heading p { font-size: 12px; }
@@ -384,7 +399,7 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
 }
 @media print {
   body { background: #fff; }
-  .app-footer { display: none !important; }
+  .app-footer, .lessonleaf-overview { display: none !important; }
   .skip-link, .sidebar, .topbar, .mobile-nav, .hero, .curriculum, .generator-switch, .section-heading, .editor-column, .preview-heading, .save-panel, .empty-preview, .library-content, [data-slot="dialog-overlay"], [data-slot="dialog-content"] { display: none !important; }
   .app-shell, .main-area, .content, .builder, .builder-grid, .preview-column, .preview-sticky { display: block !important; width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
   .main-area > .workspace-content, .main-area > .settings-content, .main-area > .term-content, .main-area > .library-content { display: none !important; }

@@ -57,7 +57,7 @@
   .account-button > span:nth-child(2) { display: none; }
 }
 
-.dark :is(.sidebar, .topbar, .mobile-nav, .settings-card, .workspace-editor, .workspace-item, .term-card, .card, .curriculum, .week-card, .library-empty, .saved-card, .auth-modal, .class-stats > div, .workspace-empty, .workspace-list-empty, .sign-in-button, .secondary-button, .google-button, .print-button, .weekday-picker button, .class-search input, .school-logo-preview) {
+.dark :is(.sidebar, .topbar, .mobile-nav, .settings-card, .workspace-editor, .workspace-item, .term-card, .card, .curriculum, .week-card, .library-empty, .saved-card, .auth-modal, .class-stats > div, .workspace-empty, .workspace-list-empty, .sign-in-button, .secondary-button, .google-button, .print-button, .export-button, .weekday-picker button, .class-search input, .school-logo-preview) {
   background: var(--card);
   border-color: var(--line);
   color: var(--ink);
@@ -78,7 +78,7 @@
 .dark :is(.side-nav button, .mobile-nav button, .generator-tabs button, .template-option, .editor-tabs button, .weekday-picker button, .auth-links button, .saved-footer button, .text-link, .course-week-top, .week-number, .unit, .curriculum-toggle, .kicker, .eyebrow) {
   color: #b8d9a6;
 }
-.dark :is(.side-nav button:hover, .side-nav button.active, .mobile-nav button.active, .mobile-nav button:hover, .workspace-item-main:hover, .sign-in-button:hover, .account-button:hover, .secondary-button:hover, .google-button:hover, .print-button:hover, .week-card:hover) {
+.dark :is(.side-nav button:hover, .side-nav button.active, .mobile-nav button.active, .mobile-nav button:hover, .workspace-item-main:hover, .sign-in-button:hover, .account-button:hover, .secondary-button:hover, .google-button:hover, .print-button:hover, .export-button:hover, .week-card:hover) {
   background: #2b4031;
   color: #e5f5df;
 }

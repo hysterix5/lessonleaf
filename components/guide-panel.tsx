@@ -13,7 +13,7 @@ const sections = [
   { id: "course", title: "Outline a course", summary: "Plan topics for each week." },
   { id: "single", title: "Create one lesson", summary: "Draft and refine one plan." },
   { id: "term", title: "Generate a term", summary: "Create a plan for every meeting." },
-  { id: "library", title: "Revisit and print", summary: "Find, update, or export plans." },
+  { id: "library", title: "Revisit and export", summary: "Find, update, or export plans." },
 ] as const;
 
 function GuideStep({ number, id, title, children, note, action, onAction }: {
@@ -78,7 +78,7 @@ export function GuidePanel({ signedIn, onNavigate, onSignIn }: {
       <GuideStep number={5} id="single" title="Create one lesson plan" action="Open single plan" onAction={() => onNavigate("builder")} note={<>An unsaved working draft stays in this browser but will not appear in <strong>My lesson plans</strong>. Save changes before choosing <strong>Create a fresh draft</strong>.</>}>
         <li>Open <strong>Generate plans → Single Plan</strong>. Select a saved class and course week, or enter lesson details yourself.</li>
         <li>Check the topic, grade, week, date, duration, and other details. Fields marked <strong>*</strong> are required. Type a lesson category, choose a <strong>Generation mode</strong> and, for AI drafts, an <strong>AI model</strong>. Auto balances available models. AI mode requires sign-in.</li>
-        <li>Under <strong>Resource / textbook</strong>, optionally add up to five PNG, JPG, or WebP pictures of textbook pages or screenshots. They are saved privately with the lesson when you sign in and save it. Pictures are reference only; AI drafting and printouts use the text fields.</li>
+        <li>Under <strong>Resource / textbook</strong>, optionally add up to five PNG, JPG, or WebP pictures of textbook pages or screenshots. They are saved privately with the lesson when you sign in and save it. Pictures are reference only and are not included in AI drafts or exports.</li>
         <li>Edit <strong>Goals &amp; resources</strong>, <strong>Teaching flow</strong>, and <strong>Assessment &amp; more</strong>. The preview updates as you work.</li>
         <li>Select <strong>Save draft</strong> to return later, or <strong>Mark ready</strong> when the plan is ready to teach.</li>
       </GuideStep>
@@ -90,11 +90,13 @@ export function GuidePanel({ signedIn, onNavigate, onSignIn }: {
         <li>Choose <strong>Smart Template</strong> or <strong>AI draft</strong>. For AI drafts, select an <strong>AI model</strong> or keep Auto. Fix any missing-week message, review the lesson count and dates, then generate the drafts.</li>
       </GuideStep>
 
-      <GuideStep number={7} id="library" title="Find, edit, and print your plans" action="Open my lesson plans" onAction={() => onNavigate("library")} note={<>The sample PDF shows the reference format. Uploading new PDFs and automatic Drive export are not available yet. Review AI drafts before teaching.</>}>
+      <GuideStep number={7} id="library" title="Find, edit, and export your plans" action="Open my lesson plans" onAction={() => onNavigate("library")} note={<>The sample PDF shows the reference format. Uploading new PDFs and automatic Drive export are not available yet. Review AI drafts before teaching.</>}>
         <li>Open <strong>My lesson plans</strong> to browse lessons grouped by course. Plans without a course appear under <strong>Other plans</strong>. Search by course, topic, class, category, date, or subject.</li>
         <li>Select <strong>Open</strong> to edit a plan, then use <strong>Save draft</strong> or <strong>Mark ready</strong> again to store the changes.</li>
-        <li>In <strong>Lesson preview</strong>, choose <strong>Normal layout</strong> (the default, based on the sample PDF) or <strong>Styled layout</strong>. Use the printer icon to print the selected design, or choose <strong>Save as PDF</strong> in your browser&apos;s print dialog.</li>
-        <li>To print a full course, choose its print template in <strong>My lesson plans</strong> and select <strong>Print all</strong> beside the course name. The print dialog includes every saved plan in that course, in lesson date order, even when a search is active.</li>
+        <li>In <strong>Lesson preview</strong>, choose <strong>Normal layout</strong> (the default, based on the sample PDF) or <strong>Styled layout</strong>. Select <strong>Print / PDF</strong> to print the selected design, or choose <strong>Save as PDF</strong> in your browser&apos;s print dialog.</li>
+        <li>Select <strong>Word</strong> in Lesson preview to download the current draft as an editable .docx file using the selected export layout, including the school logo when available.</li>
+        <li>Choose an <strong>Export layout</strong> in <strong>My lesson plans</strong>, then select <strong>Print / PDF</strong> beside a course to print or save it as PDF. The print dialog includes every saved plan in that course, in lesson date order, even when a search is active.</li>
+        <li>Select <strong>Download Word</strong> beside a course to download its overview and every saved lesson as one editable .docx file using the selected layout.</li>
         <li>Use <strong>New lesson plan</strong> to start again. To remove a saved plan, select its delete icon and then <strong>Confirm delete</strong>.</li>
       </GuideStep>
     </div>

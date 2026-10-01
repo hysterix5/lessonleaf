@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import type { CourseOverview } from "@/lib/catalog";
 import type { LessonPlan } from "@/lib/lesson-plan";
+import { displayLessonDate, normalOverviewContent } from "@/lib/print-content";
 import type { AppSettings } from "@/lib/settings";
 import styles from "./lesson-preview.module.css";
 
@@ -57,12 +58,6 @@ function NormalLines({ items }: { items: string[] }) {
   return <div className={styles.lines}>{items.map((item, index) => <p key={`${index}-${item}`}>{item}</p>)}</div>;
 }
 
-function displayDate(value: string) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value || "—";
-  const date = new Date(`${value}T00:00:00Z`);
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
-}
-
 function NormalTemplate({ plan, settings, logoUrl, eagerImages }: { plan: LessonPlan; settings: AppSettings; logoUrl: string | null; eagerImages: boolean }) {
   return <article className={styles.normal}>
     <header className={styles.header}>
@@ -73,7 +68,7 @@ function NormalTemplate({ plan, settings, logoUrl, eagerImages }: { plan: Lesson
 
     <table className={styles.details} aria-label="Lesson details"><colgroup><col className={styles.labelColumn} /><col /><col className={styles.labelColumn} /><col /></colgroup><tbody>
       <tr><th scope="row">Subject</th><td>{plan.subject}</td><th scope="row">Level</th><td>{plan.grade}</td></tr>
-      <tr><th scope="row">Date</th><td>{displayDate(plan.date)}</td><th scope="row">Duration</th><td>{plan.duration} minutes</td></tr>
+      <tr><th scope="row">Date</th><td>{displayLessonDate(plan.date)}</td><th scope="row">Duration</th><td>{plan.duration} minutes</td></tr>
       <tr><th scope="row">Chapter</th><td>{plan.chapter || "—"}</td><th scope="row">Unit</th><td>{plan.unit || "—"}</td></tr>
       <tr><th scope="row">Resource</th><td>{plan.resource || "—"}</td><th scope="row">Pages</th><td>{plan.pages || "—"}</td></tr>
       {(plan.className || (plan.category && plan.category !== "Regular" && plan.category !== "General")) && <tr><th scope="row">Class</th><td>{plan.className || "—"}</td><th scope="row">Category</th><td>{plan.category || "—"}</td></tr>}
@@ -120,16 +115,16 @@ function OverviewTable({ course }: { course: CourseOverview }) {
 }
 
 function NormalOverview({ course, sample, settings, logoUrl, eagerImages }: { course: CourseOverview; sample: LessonPlan | undefined; settings: AppSettings; logoUrl: string | null; eagerImages: boolean }) {
-  const schoolYear = sample?.schoolYear || settings.schoolYear;
+  const content = normalOverviewContent(course, sample, settings);
   return <article className={styles.normal}>
     <header className={styles.header}>
       {logoUrl && <Image src={logoUrl} alt={`${settings.schoolName || "School"} logo`} width={64} height={64} className={styles.logo} loading={eagerImages ? "eager" : "lazy"} unoptimized />}
-      <h2>Lesson Plan - {sample?.grade}{sample?.grade && schoolYear ? " - " : ""}{schoolYear}</h2>
-      <p>Overview of Course Content{sample?.subject ? ` • ${sample.subject}` : ""}{sample?.resource ? ` • ${sample.resource}` : ""}</p>
+      <h2>{content.title}</h2>
+      <p>{content.subtitle}</p>
     </header>
-    {course.description && <p className={styles.overviewGoal}><strong>Core Goal:</strong> {course.description}</p>}
+    {content.coreGoal && <p className={styles.overviewGoal}><strong>Core Goal:</strong> {content.coreGoal}</p>}
     <OverviewTable course={course} />
-    <footer className={styles.footer}><span>{(sample?.preparedBy || settings.teacherName) && <>Prepared By: {sample?.preparedBy || settings.teacherName}</>}</span><span>{settings.schoolName}{settings.schoolName && schoolYear ? " • " : ""}{schoolYear}</span></footer>
+    <footer className={styles.footer}><span>{content.preparedBy}</span><span>{content.schoolAndYear}</span></footer>
   </article>;
 }
 

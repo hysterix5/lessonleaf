@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import type { Session } from "@supabase/supabase-js";
-import { ArrowRight, BookOpen, BookOpenText, CalendarRange, Check, ChevronRight, CircleHelp, Clock3, FileText, LayoutGrid, Leaf, LoaderCircle, LogOut, Plus, Printer, School, Settings2, Sparkles, Trash2, type LucideIcon } from "lucide-react";
+import { ArrowRight, BookOpen, BookOpenText, CalendarRange, Check, ChevronRight, CircleHelp, Clock3, FileDown, FileText, LayoutGrid, Leaf, LoaderCircle, LogOut, Plus, Printer, School, Settings2, Sparkles, Trash2, type LucideIcon } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AiModelSelect } from "@/components/ai-model-select";
@@ -14,6 +14,7 @@ import { CoursePanel } from "@/components/course-panel";
 import { ErrorAlert } from "@/components/error-alert";
 import { GenerationModeSelect, type GenerationMode } from "@/components/generation-mode-select";
 import { GuidePanel } from "@/components/guide-panel";
+import { LessonleafOverview } from "@/components/lessonleaf-overview";
 import { CoursePrintDocument, LessonLibrary } from "@/components/lesson-library";
 import { LessonPreview, type PrintTemplate } from "@/components/lesson-preview";
 import { ResourceSelect } from "@/components/resource-select";
@@ -96,6 +97,7 @@ export default function Home() {
   const [pendingResourceFiles, setPendingResourceFiles] = useState<File[]>([]);
   const [printTemplate, setPrintTemplate] = useState<PrintTemplate>("normal");
   const [printCourse, setPrintCourse] = useState<CoursePlanGroup | null>(null);
+  const [exportingDocx, setExportingDocx] = useState<string | null>(null);
   const [saved, setSaved] = useState<LessonPlan[]>([]);
   const [libraryQuery, setLibraryQuery] = useState("");
   const [classes, setClasses] = useState<ClassRecord[]>([]);
@@ -311,6 +313,34 @@ export default function Home() {
     setTab("goals"); setView("builder"); setBuilderError(null); setPreviewError(null);
   }
 
+  async function exportLessonDocx() {
+    if (!plan || exportingDocx) return;
+    setExportingDocx(plan.id);
+    try {
+      const { downloadLessonDocx } = await import("@/lib/docx-export");
+      await downloadLessonDocx(plan, settings, logoUrl, printTemplate);
+      toast.success("Word document downloaded.");
+    } catch {
+      toast.error("Could not download the Word document. Please try again.");
+    } finally {
+      setExportingDocx(null);
+    }
+  }
+
+  async function exportCourseDocx(group: CoursePlanGroup) {
+    if (exportingDocx) return;
+    setExportingDocx(group.key);
+    try {
+      const { downloadCourseDocx } = await import("@/lib/docx-export");
+      await downloadCourseDocx(group, settings, logoUrl, printTemplate);
+      toast.success("Course Word document downloaded.");
+    } catch {
+      toast.error("Could not download the course Word document. Please try again.");
+    } finally {
+      setExportingDocx(null);
+    }
+  }
+
   function reset() { setPlan(null); setPendingResourceFiles([]); localStorage.removeItem(workingDraftKey); setDetails({ ...emptyLesson, ...settingsToDetails(settings) }); setSingleClassId(""); setSingleCourseId(""); setSingleCategory(""); setTab("goals"); setView("builder"); setBuilderError(null); setPreviewError(null); }
 
   function selectSingleClass(id: string) {
@@ -479,7 +509,7 @@ export default function Home() {
       <WorkspaceNav view={view} onNavigate={navigate} savedCount={saved.length} mobile />
       {errorNotice && <div className="page-error"><ErrorAlert title="Something went wrong" message={errorNotice} onDismiss={() => setErrorNotice(null)} /></div>}
       {(view === "builder" || view === "term") && <div className="generator-switch">
-        <div><span className="kicker">A FRESH START FOR EVERY LESSON</span><h1>Lesson studio</h1><p>A thoughtful plan today. A little more possibility tomorrow.</p></div>
+        <div><span className="kicker">A FRESH START FOR EVERY LESSON</span><h1>Lesson plan generator</h1><p>Create an editable lesson plan for your class, your way.</p></div>
         <div className="generator-tabs" role="group" aria-label="Generation type">
           <Button type="button" className={view === "builder" ? "active" : ""} aria-pressed={view === "builder"} onClick={() => setView("builder")}><FileText size={15} aria-hidden="true" /> Single Plan</Button>
           <Button type="button" className={view === "term" ? "active" : ""} aria-pressed={view === "term"} onClick={() => setView("term")}><CalendarRange size={15} aria-hidden="true" /> Term Schedule</Button>
@@ -504,15 +534,16 @@ export default function Home() {
         </section>
         <section className="builder" id="builder"><div className="section-heading"><div><span className="kicker">MAKE IT YOURS</span><h2>Build your lesson</h2><p>Fill in the basics, create a structured draft, then refine it section by section.</p></div><Badge className="format-pill"><Icon name="spark" size={15} /> Based on the sample format</Badge></div><div className="builder-grid"><div className="editor-column"><Card className="card"><div className="card-heading"><span className="step">01</span><div><h3>Lesson details</h3><p>The starting point for your plan</p></div></div><p className="required-hint"><b className="required-mark">*</b> Required fields</p><SinglePlanSource classes={classes} courses={courses} classId={singleClassId} courseId={singleCourseId} category={singleCategory} week={details.week} onClassChange={selectSingleClass} onCourseChange={selectSingleCourse} onCategoryChange={(value) => { setSingleCategory(value); setPlan((current) => current ? { ...current, category: value } : null); }} onCourseWeekChange={selectSingleCourseWeek} /><div className="form-grid"><Field label="Subject" required placeholder="e.g. Science" value={details.subject} onChange={(v) => changeDetail("subject", v)} /><Field label="Grade level" required placeholder="e.g. Grade 1" value={details.grade} onChange={(v) => changeDetail("grade", v)} /><Field label="Section" value={details.section} onChange={(v) => changeDetail("section", v)} placeholder="e.g. A" /><Field label="School year" required placeholder="e.g. 2026–2027" value={details.schoolYear} onChange={(v) => changeDetail("schoolYear", v)} /><Field label="Week" type="number" min={1} max={52} required value={details.week} onChange={(v) => changeDetail("week", Number(v))} /><Field label="Date" type="date" value={details.date} onChange={(v) => changeDetail("date", v)} /><div className="span-2"><Field label="Lesson topic" required value={details.topic} onChange={(v) => changeDetail("topic", v)} placeholder="What will your class explore?" /></div><Field label="Duration (minutes)" type="number" min={10} max={240} required placeholder="e.g. 60" value={details.duration} onChange={(v) => changeDetail("duration", Number(v))} /><Field label="Unit" value={details.unit} onChange={(v) => changeDetail("unit", v)} /><div className="span-2"><Field label="Chapter" value={details.chapter} onChange={(v) => changeDetail("chapter", v)} /></div><div className="span-2"><ResourceSelect key={plan?.id || "new"} resources={settings.resources} value={details.resource} onChange={(value) => changeDetail("resource", value)} /><ResourceImagesField userId={session?.user.id} images={plan?.resourceImages || []} pending={pendingResourceFiles} onAdd={(files) => setPendingResourceFiles((current) => [...current, ...files])} onRemoveSaved={(path) => setPlan((current) => current ? { ...current, resourceImages: (current.resourceImages || []).filter((image) => image.path !== path) } : null)} onRemovePending={(index) => setPendingResourceFiles((current) => current.filter((_, position) => position !== index))} disabled={loading} /></div><Field label="Pages" value={details.pages} onChange={(v) => changeDetail("pages", v)} placeholder="e.g. 71–85" /><Field label="Prepared by" value={details.preparedBy} onChange={(v) => changeDetail("preparedBy", v)} placeholder="Teacher name" /></div><GenerationModeSelect value={singleGenerationMode} disabled={loading} onChange={(value) => { setSingleGenerationMode(value); setBuilderError(null); }} />{singleGenerationMode === "ai" && <AiModelSelect value={singleAiModel} onChange={(value) => { setSingleAiModel(value); setBuilderError(null); }} disabled={loading} />}<Button type="button" className="primary-button generate-button" disabled={loading} onClick={generate}><Icon name="spark" size={17} /> {loading ? "Writing with AI…" : singleGenerationMode === "ai" ? plan ? "Create a fresh AI draft" : "Create AI lesson draft" : plan ? "Create a fresh draft" : "Create lesson draft"} <Icon name="arrow" size={17} /></Button>{builderError && <ErrorAlert title="Could not create draft" message={builderError} className="form-error" />}<p className="helper">{singleGenerationMode === "ai" ? "AI drafts are editable. Review the content before saving or teaching." : "The draft uses a structured template. You can edit every section."}</p></Card>
           {plan && <Card className="card edit-card"><div className="card-heading"><span className="step">02</span><div><h3>Shape the content</h3><p>Review the teaching details</p></div></div><Tabs value={tab} onValueChange={(value) => setTab(value as Tab)}><TabsList className="editor-tabs" aria-label="Lesson sections"><TabsTrigger value="goals">Goals & resources</TabsTrigger><TabsTrigger value="flow">Teaching flow</TabsTrigger><TabsTrigger value="finish">Assessment & more</TabsTrigger></TabsList></Tabs><div className="editor-fields">{tab === "goals" && <><Area label="Core goal" value={plan.coreGoal} onChange={(v) => update("coreGoal", v)} /><Area label="Key focus" value={plan.keyFocus} onChange={(v) => update("keyFocus", v)} /><ListArea key={plan.id + "-objectives"} label="Learning objectives" items={plan.objectives} onChange={(v) => update("objectives", v)} rows={5} hint="One objective per line" /><ListArea key={plan.id + "-vocabulary"} label="Target vocabulary" items={plan.vocabulary} onChange={(v) => update("vocabulary", v)} hint="One word or phrase per line" /><Area label="Language focus" value={plan.languageFocus} onChange={(v) => update("languageFocus", v)} /><ListArea key={plan.id + "-materials"} label="Materials & resources" items={plan.materials} onChange={(v) => update("materials", v)} rows={4} hint="One material per line" /></>}{tab === "flow" && <><Area label="Warm-up" value={plan.warmUp} onChange={(v) => update("warmUp", v)} rows={4} /><Area label="Lesson procedure" value={plan.lessonProcedure} onChange={(v) => update("lessonProcedure", v)} rows={9} /><Area label="Teacher actions" value={plan.teacherActions} onChange={(v) => update("teacherActions", v)} /><Area label="Student actions" value={plan.studentActions} onChange={(v) => update("studentActions", v)} /><Area label="Activity / project" value={plan.activity} onChange={(v) => update("activity", v)} /><Area label="Presentation / discussion" value={plan.presentation} onChange={(v) => update("presentation", v)} /></>}{tab === "finish" && <><Area label="Assessment / wrap-up" value={plan.assessment} onChange={(v) => update("assessment", v)} /><Area label="Homework" value={plan.homework} onChange={(v) => update("homework", v)} /><ListArea key={plan.id + "-links"} label="Multimedia links" items={plan.multimediaLinks} onChange={(v) => update("multimediaLinks", v)} hint="One link per line" /><Area label="Notes" value={plan.notes} onChange={(v) => update("notes", v)} /></>}</div></Card>}</div>
-          <div className="preview-column"><div className="preview-sticky"><div className="preview-heading"><div><span className="kicker">THE FINISHED VIEW</span><h3>Lesson preview</h3></div>{plan && <Button type="button" className="print-button" onClick={() => window.print()} aria-label="Print or save lesson plan as PDF" title="Print or save as PDF"><Icon name="print" /></Button>}</div>
-            {plan && <div className="template-selector"><span>Print template</span><div role="group" aria-label="Print template"><Button type="button" className={`template-option ${printTemplate === "normal" ? "selected" : ""}`} aria-pressed={printTemplate === "normal"} onClick={() => setPrintTemplate("normal")}>Normal layout</Button><Button type="button" className={`template-option ${printTemplate === "styled" ? "selected" : ""}`} aria-pressed={printTemplate === "styled"} onClick={() => setPrintTemplate("styled")}>Styled layout</Button></div></div>}
+          <div className="preview-column"><div className="preview-sticky"><div className="preview-heading"><div><span className="kicker">THE FINISHED VIEW</span><h3>Lesson preview</h3></div>{plan && <div className="preview-actions"><Button type="button" className="export-button" disabled={!!exportingDocx} onClick={exportLessonDocx} aria-label="Download lesson plan as an editable Word document" title="Download the selected layout as an editable Word document"><FileDown size={16} aria-hidden="true" /> {exportingDocx === plan.id ? "Preparing…" : "Word"}</Button><Button type="button" className="print-button" onClick={() => window.print()} aria-label="Print lesson plan or save as PDF" title="Choose Save as PDF in the print dialog"><Icon name="print" /><span>Print / PDF</span></Button></div>}</div>
+            {plan && <div className="template-selector"><span>Export layout</span><div role="group" aria-label="Export layout"><Button type="button" className={`template-option ${printTemplate === "normal" ? "selected" : ""}`} aria-pressed={printTemplate === "normal"} onClick={() => setPrintTemplate("normal")}>Normal layout</Button><Button type="button" className={`template-option ${printTemplate === "styled" ? "selected" : ""}`} aria-pressed={printTemplate === "styled"} onClick={() => setPrintTemplate("styled")}>Styled layout</Button></div></div>}
             {plan ? <><LessonPreview plan={plan} settings={settings} logoUrl={logoUrl} template={printTemplate} /><div className="save-panel"><strong>{saved.some((item) => item.id === plan.id) ? "Keep your changes" : "A good plan deserves a home"}</strong><p>Save as a draft or mark it ready to teach.</p>{previewError && <ErrorAlert title="Could not save plan" message={previewError} className="form-error" />}<div className="save-actions"><Button type="button" className="secondary-button" disabled={loading} onClick={() => save("draft")}>Save draft</Button><Button type="button" className="primary-button" disabled={loading} onClick={() => save("ready")}><Icon name="check" size={16} /> Mark ready</Button></div></div></> : <div className="empty-preview"><span className="empty-icon"><BrandLogo variant="mark" decorative /></span><span className="preview-placeholder-label">A LITTLE IDEA, READY TO GROW</span><h4>Your next great lesson starts here</h4><p>Add your lesson details and create a draft. Your complete, editable plan will appear here.</p><div><span><Icon name="check" size={15} /> Clear learning objectives</span><span><Icon name="check" size={15} /> Teaching activities</span><span><Icon name="check" size={15} /> Assessment & homework</span></div></div>}</div></div></div></section></div>
       : view === "term" ? <TermSchedulePanel classes={classes} courses={courses} settings={settings} signedIn={!!session} onGenerate={generateTerm} onSignIn={() => setAuthOpen(true)} onManageClasses={() => setView("classes")} onManageCourse={() => setView("course")} />
       : view === "classes" ? <ClassesPanel classes={classes} settings={settings} signedIn={!!session} onSave={persistClass} onDelete={removeClass} onSignIn={() => setAuthOpen(true)} />
       : view === "course" ? <CoursePanel classes={classes} courses={courses} signedIn={!!session} onSave={persistCourse} onDelete={removeCourse} onSignIn={() => setAuthOpen(true)} onManageClasses={() => setView("classes")} />
       : view === "settings" ? <SettingsPanel key={`${session?.user.id ?? "guest"}:${JSON.stringify(settings)}`} settings={settings} session={session} recovery={recovery} logoUrl={logoUrl} logoError={logoError} onSave={saveSettings} onPasswordChanged={() => setRecovery(false)} onSignIn={() => { setAuthMode("sign-in"); setAuthError(null); setAuthOpen(true); }} />
       : view === "guide" ? <GuidePanel signedIn={!!session} onNavigate={(destination) => { setView(destination); window.scrollTo(0, 0); }} onSignIn={() => setAuthOpen(true)} />
-      : <LessonLibrary signedIn={!!session} plans={saved} courses={courses} classes={classes} query={libraryQuery} onQueryChange={setLibraryQuery} onNew={reset} onSignIn={() => setAuthOpen(true)} onOpen={open} onDelete={remove} confirmDelete={confirmDelete} deleting={loading} template={printTemplate} onTemplateChange={setPrintTemplate} onPrintCourse={setPrintCourse} />}
+      : <LessonLibrary signedIn={!!session} plans={saved} courses={courses} classes={classes} query={libraryQuery} onQueryChange={setLibraryQuery} onNew={reset} onSignIn={() => setAuthOpen(true)} onOpen={open} onDelete={remove} confirmDelete={confirmDelete} deleting={loading} template={printTemplate} onTemplateChange={setPrintTemplate} onPrintCourse={setPrintCourse} onExportCourse={exportCourseDocx} exportingCourseId={exportingDocx} />}
+      {view === "builder" && <LessonleafOverview />}
       {printCourse && <CoursePrintDocument group={printCourse} template={printTemplate} settings={settings} logoUrl={logoUrl} />}
       <footer className="app-footer"><span>© 2026 Lessonleaf</span><nav aria-label="More information"><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms and Conditions</Link></nav></footer>
     </main>
